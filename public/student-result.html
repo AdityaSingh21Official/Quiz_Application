@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Result · Quiz App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="result-shell">
+  <div class="card result-card">
+
+    <span class="eyebrow">Cell Biology — Unit 3</span>
+    <h2 style="margin-bottom: 22px;">Quiz complete</h2>
+
+    <div class="score-ring">
+      <svg viewBox="0 0 140 140">
+        <circle class="track" cx="70" cy="70" r="55"></circle>
+        <circle id="scoreProgressCircle" cx="70" cy="70" r="55" stroke-dashoffset="86"></circle>
+      </svg>
+      <div class="score-ring-label">
+        <p id="scoreDisplay">9</p>
+        <p id="scoreOutOf">out of 12</p>
+      </div>
+    </div>
+
+    <p id="resultStatusNote">Submitted with 2 minutes remaining.</p>
+
+    <div id="answerReview" class="review-list">
+
+      <div class="review-item correct">
+        <p class="review-question">1. Which organelle is primarily responsible for producing ATP?</p>
+        <div class="review-answer-row">
+          <span class="review-status-icon">✓</span>
+          <span class="reviewYourAnswer">Your answer: Mitochondrion</span>
+        </div>
+      </div>
+
+      <div class="review-item incorrect">
+        <p class="review-question">2. What is the powerhouse's outer structure called?</p>
+        <div class="review-answer-row">
+          <span class="review-status-icon">✕</span>
+          <span class="reviewYourAnswer">Your answer: Cristae</span>
+        </div>
+        <div class="review-answer-row">
+          <span class="reviewCorrectAnswer">Correct answer: Double membrane</span>
+        </div>
+      </div>
+
+    </div>
+
+    <button type="button" id="backToDashboardBtn" class="btn btn-primary btn-block" style="margin-top: 28px;">Back to my quizzes</button>
+  </div>
+</div>
+
+</body>
+</html>

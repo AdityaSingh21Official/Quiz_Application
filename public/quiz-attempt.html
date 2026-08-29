@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cell Biology — Unit 3 · Quiz App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="attempt-shell">
+
+  <!-- Shown by JS once the timer hits zero, before/while auto-submitting -->
+  <div id="autoSubmitBanner">Time's up — your answers are being submitted automatically.</div>
+
+  <header class="attempt-topbar">
+    <div class="quiz-name-block">
+      <span class="eyebrow">In progress</span>
+      <h2 id="quizTitleHeading">Cell Biology — Unit 3</h2>
+    </div>
+
+    <div class="timer-widget">
+      <span class="timer-label">Time left</span>
+      <div id="timerRing">
+        <svg viewBox="0 0 64 64">
+          <circle class="timer-track" cx="32" cy="32" r="28"></circle>
+          <circle id="timerProgressCircle" cx="32" cy="32" r="28"></circle>
+        </svg>
+        <span id="timerText">14:52</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="attempt-body">
+
+    <div class="attempt-progress">
+      <span>Question <span id="currentQuestionNum">1</span> of <span id="totalQuestionsNum">12</span></span>
+      <span id="answeredCount">4 answered</span>
+    </div>
+
+    <!-- Jump-to-question dots -->
+    <div id="questionNavDots" class="question-dots">
+      <button type="button" class="question-dot current" data-question-index="1">1</button>
+      <button type="button" class="question-dot answered" data-question-index="2">2</button>
+      <button type="button" class="question-dot answered" data-question-index="3">3</button>
+      <button type="button" class="question-dot" data-question-index="4">4</button>
+      <button type="button" class="question-dot" data-question-index="5">5</button>
+      <button type="button" class="question-dot" data-question-index="6">6</button>
+      <button type="button" class="question-dot" data-question-index="7">7</button>
+      <button type="button" class="question-dot" data-question-index="8">8</button>
+      <button type="button" class="question-dot" data-question-index="9">9</button>
+      <button type="button" class="question-dot" data-question-index="10">10</button>
+      <button type="button" class="question-dot" data-question-index="11">11</button>
+      <button type="button" class="question-dot" data-question-index="12">12</button>
+    </div>
+
+    <div id="questionCard" class="card">
+      <p id="questionText">Which organelle is primarily responsible for producing ATP through cellular respiration?</p>
+
+      <div id="optionsContainer">
+        <button type="button" class="option-btn selected" data-option-index="1">
+          <span class="option-marker">A</span>
+          <span class="option-label-text">Mitochondrion</span>
+        </button>
+        <button type="button" class="option-btn" data-option-index="2">
+          <span class="option-marker">B</span>
+          <span class="option-label-text">Golgi apparatus</span>
+        </button>
+        <button type="button" class="option-btn" data-option-index="3">
+          <span class="option-marker">C</span>
+          <span class="option-label-text">Ribosome</span>
+        </button>
+        <button type="button" class="option-btn" data-option-index="4">
+          <span class="option-marker">D</span>
+          <span class="option-label-text">Lysosome</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="attempt-footer">
+      <button type="button" id="prevQuestionBtn" class="btn btn-outline" disabled>← Previous</button>
+      <div class="footer-right">
+        <button type="button" id="nextQuestionBtn" class="btn btn-primary">Next →</button>
+        <button type="button" id="submitQuizBtn" class="btn btn-gold">Submit quiz</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Confirm-submit modal -->
+  <div id="submitConfirmModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>Submit your answers?</h3>
+      <p id="submitConfirmMessage">You've answered 9 of 12 questions. You can't change your answers after submitting.</p>
+      <div class="modal-actions">
+        <button type="button" id="cancelSubmitBtn" class="btn btn-outline">Keep going</button>
+        <button type="button" id="confirmSubmitBtn" class="btn btn-gold">Submit now</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

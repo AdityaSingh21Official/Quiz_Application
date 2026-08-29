@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard · Quiz App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="brand-mark">QA</span> Quiz App</div>
+    <nav class="sidebar-nav">
+      <a href="teacher-dashboard.html" id="navQuestions" class="active">Create &amp; manage quizzes</a>
+      <a href="teacher-results.html" id="navResults">Student results</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user-avatar">RT</div>
+      <div class="sidebar-user-meta">
+        <div id="teacherName">Rita Mehta</div>
+        <div class="role-tag">Teacher</div>
+      </div>
+      <button id="logoutBtn">Log out</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-area">
+    <div class="main-header">
+      <div>
+        <span class="eyebrow">Quiz builder</span>
+        <h1>Create a new quiz</h1>
+      </div>
+    </div>
+
+    <!-- Create quiz form -->
+    <form id="createQuizForm" class="card card-pad" style="margin-bottom: 40px;">
+      <div class="card-header">
+        <h2>Quiz details</h2>
+      </div>
+
+      <div class="input-row">
+        <div class="field">
+          <label for="quizTitle">Quiz title</label>
+          <input class="input" type="text" id="quizTitle" name="quizTitle" placeholder="e.g. Cell Biology — Unit 3" required>
+        </div>
+        <div class="field">
+          <label for="quizTime">Time limit</label>
+          <div class="input-with-suffix">
+            <input class="input" type="number" id="quizTime" name="quizTime" min="1" placeholder="15" required>
+            <span class="suffix">minutes</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-header" style="margin-top: 10px;">
+        <h3>Questions</h3>
+        <button type="button" id="addQuestionBtn" class="btn btn-outline btn-sm">+ Add question</button>
+      </div>
+
+      <!-- Container the JS will populate with question blocks -->
+      <div id="questionsBuilder">
+
+        <!-- Sample question block (repeat this structure per question) -->
+        <div class="question-block" data-question-index="0">
+          <div class="question-block-header">
+            <span class="question-index">Question 1</span>
+            <button type="button" class="remove-question-btn">Remove</button>
+          </div>
+
+          <div class="field">
+            <label for="questionText-0">Question text</label>
+            <input class="input question-text-input" type="text" id="questionText-0" name="questionText-0" placeholder="What organelle produces ATP?" required>
+          </div>
+
+          <div class="field" style="margin-bottom: 6px;">
+            <label>Options — mark the correct one</label>
+
+            <div class="option-row">
+              <span class="option-letter">A</span>
+              <input class="input option-input" type="text" name="option-0-1" placeholder="Option A" required>
+              <label class="correct-label">
+                <input class="correct-radio" type="radio" name="correctOption-0" value="1">
+                Correct
+              </label>
+            </div>
+
+            <div class="option-row">
+              <span class="option-letter">B</span>
+              <input class="input option-input" type="text" name="option-0-2" placeholder="Option B" required>
+              <label class="correct-label">
+                <input class="correct-radio" type="radio" name="correctOption-0" value="2">
+                Correct
+              </label>
+            </div>
+
+            <div class="option-row">
+              <span class="option-letter">C</span>
+              <input class="input option-input" type="text" name="option-0-3" placeholder="Option C (optional)">
+              <label class="correct-label">
+                <input class="correct-radio" type="radio" name="correctOption-0" value="3">
+                Correct
+              </label>
+            </div>
+
+            <div class="option-row">
+              <span class="option-letter">D</span>
+              <input class="input option-input" type="text" name="option-0-4" placeholder="Option D (optional)">
+              <label class="correct-label">
+                <input class="correct-radio" type="radio" name="correctOption-0" value="4">
+                Correct
+              </label>
+            </div>
+
+            <p class="hint">Up to 4 options per question. At least 2 are required.</p>
+          </div>
+        </div>
+        <!-- /question-block -->
+
+      </div>
+
+      <!-- Hidden template for JS to clone when "Add question" is clicked -->
+      <template id="questionBlockTemplate">
+        <div class="question-block" data-question-index="">
+          <div class="question-block-header">
+            <span class="question-index">Question</span>
+            <button type="button" class="remove-question-btn">Remove</button>
+          </div>
+          <div class="field">
+            <label>Question text</label>
+            <input class="input question-text-input" type="text" placeholder="Type the question…" required>
+          </div>
+          <div class="field" style="margin-bottom: 6px;">
+            <label>Options — mark the correct one</label>
+            <div class="option-row">
+              <span class="option-letter">A</span>
+              <input class="input option-input" type="text" placeholder="Option A" required>
+              <label class="correct-label"><input class="correct-radio" type="radio" value="1"> Correct</label>
+            </div>
+            <div class="option-row">
+              <span class="option-letter">B</span>
+              <input class="input option-input" type="text" placeholder="Option B" required>
+              <label class="correct-label"><input class="correct-radio" type="radio" value="2"> Correct</label>
+            </div>
+            <div class="option-row">
+              <span class="option-letter">C</span>
+              <input class="input option-input" type="text" placeholder="Option C (optional)">
+              <label class="correct-label"><input class="correct-radio" type="radio" value="3"> Correct</label>
+            </div>
+            <div class="option-row">
+              <span class="option-letter">D</span>
+              <input class="input option-input" type="text" placeholder="Option D (optional)">
+              <label class="correct-label"><input class="correct-radio" type="radio" value="4"> Correct</label>
+            </div>
+            <p class="hint">Up to 4 options per question. At least 2 are required.</p>
+          </div>
+        </div>
+      </template>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top: 10px;">
+        <button type="reset" id="resetQuizFormBtn" class="btn btn-ghost">Clear</button>
+        <button type="submit" id="submitQuizBtn" class="btn btn-primary">Save quiz</button>
+      </div>
+    </form>
+
+    <!-- Existing quizzes -->
+    <div class="main-header">
+      <div>
+        <span class="eyebrow">Your library</span>
+        <h2 style="margin:0;">Existing quizzes</h2>
+      </div>
+    </div>
+
+    <div id="quizListContainer" class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Questions</th>
+            <th>Time limit</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="quizListBody">
+          <tr class="quiz-list-row" data-quiz-id="1">
+            <td class="quizTitleText">Cell Biology — Unit 3</td>
+            <td class="quizQuestionCount">12 questions</td>
+            <td class="quizTimeText">15 min</td>
+            <td class="quizCreatedDate">Aug 20, 2026</td>
+            <td>
+              <button type="button" class="btn btn-ghost btn-sm editQuizBtn" data-quiz-id="1">Edit</button>
+              <button type="button" class="btn btn-danger-ghost btn-sm deleteQuizBtn" data-quiz-id="1">Delete</button>
+            </td>
+          </tr>
+          <tr class="quiz-list-row" data-quiz-id="2">
+            <td class="quizTitleText">World War II — Timeline</td>
+            <td class="quizQuestionCount">8 questions</td>
+            <td class="quizTimeText">10 min</td>
+            <td class="quizCreatedDate">Aug 12, 2026</td>
+            <td>
+              <button type="button" class="btn btn-ghost btn-sm editQuizBtn" data-quiz-id="2">Edit</button>
+              <button type="button" class="btn btn-danger-ghost btn-sm deleteQuizBtn" data-quiz-id="2">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in · Quiz App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="login-shell">
+
+  <!-- Left branding panel -->
+  <div class="login-hero">
+    <div>
+      <div class="brand-mark-lg">QA</div>
+      <h1>The quiz room, without the paper cuts.</h1>
+      <p class="lede">One roll call for teachers and students. Set the clock, write the questions, and let the room finish on time — or not.</p>
+    </div>
+    <div class="login-hero-footer">
+      ROOM.LOGIN &nbsp;·&nbsp; v1.0
+    </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="login-form-side">
+    <div class="login-card">
+      <h2>Welcome back</h2>
+      <p class="sub">Sign in with your username and password.</p>
+
+      <p id="loginError">That username and password don't match our records.</p>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="username">Username</label>
+          <input class="input" type="text" id="username" name="username" placeholder="e.g. rita.teacher" autocomplete="username" required>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input class="input" type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+
+        <button type="submit" id="loginBtn" class="btn btn-gold btn-block">Sign in</button>
+      </form>
+
+      <p class="role-note">Your role — teacher or student — is detected automatically from your account.</p>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Results · Quiz App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="brand-mark">QA</span> Quiz App</div>
+    <nav class="sidebar-nav">
+      <a href="teacher-dashboard.html" id="navQuestions">Create &amp; manage quizzes</a>
+      <a href="teacher-results.html" id="navResults" class="active">Student results</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user-avatar">RT</div>
+      <div class="sidebar-user-meta">
+        <div id="teacherName">Rita Mehta</div>
+        <div class="role-tag">Teacher</div>
+      </div>
+      <button id="logoutBtn">Log out</button>
+    </div>
+  </aside>
+
+  <main class="main-area">
+    <div class="main-header">
+      <div>
+        <span class="eyebrow">Gradebook</span>
+        <h1>Student results</h1>
+      </div>
+      <div class="field" style="margin:0; min-width:260px;">
+        <label for="quizFilterSelect">Viewing quiz</label>
+        <select id="quizFilterSelect" class="select">
+          <option value="1">Cell Biology — Unit 3</option>
+          <option value="2">World War II — Timeline</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Summary stats -->
+    <div id="resultsSummary" class="summary-stats">
+      <div class="stat-card">
+        <div class="stat-value" id="totalStudents">28</div>
+        <div class="stat-label">Students enrolled</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalAttempted">21</div>
+        <div class="stat-label">Attempted so far</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="averageScore">7.4</div>
+        <div class="stat-label">Average score</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Status</th>
+            <th>Score</th>
+            <th>Time taken</th>
+          </tr>
+        </thead>
+        <tbody id="resultsTableBody">
+          <tr class="result-row" data-student-id="101">
+            <td class="studentName">Aarav Shah</td>
+            <td class="attemptStatus"><span class="badge badge-done">Attempted</span></td>
+            <td class="studentScore score-cell">9 / 12</td>
+            <td class="timeTaken">13m 40s</td>
+          </tr>
+          <tr class="result-row" data-student-id="102">
+            <td class="studentName">Meera Iyer</td>
+            <td class="attemptStatus"><span class="badge badge-done">Attempted</span></td>
+            <td class="studentScore score-cell">11 / 12</td>
+            <td class="timeTaken">10m 05s</td>
+          </tr>
+          <tr class="result-row" data-student-id="103">
+            <td class="studentName">Kabir Nair</td>
+            <td class="attemptStatus"><span class="badge badge-pending">Not attempted</span></td>
+            <td class="studentScore score-cell">—</td>
+            <td class="timeTaken">—</td>
+          </tr>
+          <tr class="result-row" data-student-id="104">
+            <td class="studentName">Sana Vora</td>
+            <td class="attemptStatus"><span class="badge badge-missed">Auto‑submitted</span></td>
+            <td class="studentScore score-cell">6 / 12</td>
+            <td class="timeTaken">15m 00s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>
