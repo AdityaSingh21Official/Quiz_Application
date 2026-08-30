@@ -2,6 +2,8 @@ import express from "express";
 import { config } from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import { testConnection } from "./database/db.config.js";
+import loginRoutes from "./routes/login.routes.js";
 
 config();
 
@@ -14,10 +16,16 @@ const __dirname = path.dirname(__filename);
 
 app.use(express.static(path.resolve(__dirname, "../public")));
 
-app.listen(port, () => {
+app.use("/api", loginRoutes);
+
+app.listen(port, async () => {
   try {
-    console.log("Server Starting . . . . . .");
+    console.log("\nServer Starting . . . . . .");
+
+    await testConnection();
 
     console.log(`Server Started on http://localhost:${port}`);
-  } catch (error) {}
+  } catch (error) {
+    throw new Error(error);
+  }
 });
