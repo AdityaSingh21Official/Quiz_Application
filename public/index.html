@@ -1,54 +1,159 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign in · Quiz App</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<div class="login-shell">
-
-  <!-- Left branding panel -->
-  <div class="login-hero">
-    <div>
-      <div class="brand-mark-lg">QA</div>
-      <h1>The quiz room, without the paper cuts.</h1>
-      <p class="lede">One roll call for teachers and students. Set the clock, write the questions, and let the room finish on time — or not.</p>
-    </div>
-    <div class="login-hero-footer">
-      ROOM.LOGIN &nbsp;·&nbsp; v1.0
-    </div>
-  </div>
-
-  <!-- Right form panel -->
-  <div class="login-form-side">
-    <div class="login-card">
-      <h2>Welcome back</h2>
-      <p class="sub">Sign in with your username and password.</p>
-
-      <p id="loginError">That username and password don't match our records.</p>
-
-      <form id="loginForm">
-        <div class="field">
-          <label for="username">Username</label>
-          <input class="input" type="text" id="username" name="username" placeholder="e.g. rita.teacher" autocomplete="username" required>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in · Quiz App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="login-shell">
+      <!-- Left branding panel -->
+      <div class="login-hero">
+        <div>
+          <div class="brand-mark-lg">QA</div>
+          <h1>The quiz room, without the paper cuts.</h1>
+          <p class="lede">
+            One roll call for teachers and students. Set the clock, write the
+            questions, and let the room finish on time — or not.
+          </p>
         </div>
+        <div class="login-hero-footer">ROOM.LOGIN &nbsp;·&nbsp; v1.0</div>
+      </div>
 
-        <div class="field">
-          <label for="password">Password</label>
-          <input class="input" type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+      <!-- Right form panel -->
+      <div class="login-form-side">
+        <div class="login-card">
+          <h2>Welcome back</h2>
+          <p class="sub">Sign in with your username and password.</p>
+
+          <form id="loginForm">
+            <div class="field">
+              <label for="username">Username</label>
+              <input
+                class="input"
+                type="text"
+                id="username"
+                name="username"
+                placeholder="e.g. rita.teacher"
+                autocomplete="username"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="password">Password</label>
+              <input
+                class="input"
+                type="password"
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+
+            <button type="submit" id="loginBtn" class="btn btn-gold btn-block">
+              Sign in
+            </button>
+          </form>
+          <div
+            class="hidden"
+            id="loginError"
+            style="
+              text-align: center;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              background-color: #fdf2f2;
+              border: 1px solid #f8b4b4;
+              color: #9b1c1c;
+              padding: 12px 16px;
+              border-radius: 6px;
+              font-size: 14px;
+              font-family: inherit;
+              margin-bottom: 20px;
+              line-height: 1.4;
+              margin-top: 15px;
+            "
+          >
+            <!-- SVG warning icon -->
+            <svg
+              style="flex-shrink: 0"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>Invalid Username or Password</span>
+          </div>
         </div>
-
-        <button type="submit" id="loginBtn" class="btn btn-gold btn-block">Sign in</button>
-      </form>
-
-      <p class="role-note">Your role — teacher or student — is detected automatically from your account.</p>
+      </div>
     </div>
-  </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const logInErrorBox = document.getElementById("loginError");
 
-</div>
+        document
+          .getElementById("loginBtn")
+          .addEventListener("click", async function (e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-</body>
+            const inputId = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            let callApi = "";
+            let nextWindow = "";
+
+            if (inputId.length === 3) {
+              callApi = "/api/login/faculty";
+              nextWindow = "/teacher-dashboard.html";
+              console.log(callApi);
+            } else if (inputId.length === 5) {
+              callApi = "/api/login/student";
+              nextWindow = "/student-dashboard.html";
+              console.log(callApi);
+            } else {
+              logInErrorBox.classList.remove("hidden");
+              return;
+            }
+
+            const response = await fetch(callApi, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                id: inputId,
+                password: password,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              document.getElementById("username").value = "";
+              document.getElementById("password").value = "";
+              logInErrorBox.classList.remove("hidden");
+              return;
+            }
+
+            console.log(data.message);
+            localStorage.setItem("token", data.token);
+
+            window.location.href = nextWindow;
+          });
+      });
+    </script>
+  </body>
 </html>

@@ -1,97 +1,123 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Quizzes · Quiz App</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Quizzes · Quiz App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <script src="./auth.check.js"></script>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <span class="brand-mark">QA</span> Quiz App
+        </div>
+        <nav class="sidebar-nav">
+          <a href="student-dashboard.html" id="navMyQuizzes" class="active"
+            >My quizzes</a
+          >
+        </nav>
+        <div class="sidebar-footer">
+          <div class="sidebar-user-avatar">AS</div>
+          <div class="sidebar-user-meta">
+            <div id="studentName">Aarav Shah</div>
+            <div class="role-tag">Student</div>
+          </div>
+          <button id="logoutBtnStudent">Log out</button>
+        </div>
+      </aside>
 
-<div class="app-shell">
+      <main class="main-area">
+        <div class="main-header">
+          <div>
+            <span class="eyebrow">Roll call</span>
+            <h1>Your quizzes</h1>
+          </div>
+        </div>
 
-  <aside class="sidebar">
-    <div class="sidebar-brand"><span class="brand-mark">QA</span> Quiz App</div>
-    <nav class="sidebar-nav">
-      <a href="student-dashboard.html" id="navMyQuizzes" class="active">My quizzes</a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-user-avatar">AS</div>
-      <div class="sidebar-user-meta">
-        <div id="studentName">Aarav Shah</div>
-        <div class="role-tag">Student</div>
-      </div>
-      <button id="logoutBtnStudent">Log out</button>
+        <div id="quizGrid" class="quiz-grid">
+          <!-- Not attempted -->
+          <div class="quiz-card" data-quiz-id="1">
+            <div class="quiz-card-top">
+              <span class="quiz-card-subject">Biology</span>
+              <h3 class="quiz-card-title">Cell Biology — Unit 3</h3>
+            </div>
+            <div class="quiz-card-bottom">
+              <div class="quiz-card-meta">
+                <span class="quizCardQuestionCount">12 questions</span>
+                <span class="quizCardTimeLimit">15 min</span>
+              </div>
+              <div class="quiz-card-footer">
+                <span class="badge badge-pending quizCardStatusBadge"
+                  >Not attempted</span
+                >
+                <button
+                  type="button"
+                  class="btn btn-gold btn-sm startQuizBtn"
+                  data-quiz-id="1"
+                >
+                  Start quiz
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Completed -->
+          <div class="quiz-card" data-quiz-id="2">
+            <div class="quiz-card-top">
+              <span class="quiz-card-subject">History</span>
+              <h3 class="quiz-card-title">World War II — Timeline</h3>
+            </div>
+            <div class="quiz-card-bottom">
+              <div class="quiz-card-meta">
+                <span class="quizCardQuestionCount">8 questions</span>
+                <span class="quizCardTimeLimit">10 min</span>
+              </div>
+              <div class="quiz-card-footer">
+                <span class="badge badge-done quizCardStatusBadge"
+                  >Scored 6 / 8</span
+                >
+                <button
+                  type="button"
+                  class="btn btn-outline btn-sm startQuizBtn"
+                  data-quiz-id="2"
+                  disabled
+                >
+                  Completed
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Auto-submitted -->
+          <div class="quiz-card" data-quiz-id="3">
+            <div class="quiz-card-top">
+              <span class="quiz-card-subject">Mathematics</span>
+              <h3 class="quiz-card-title">Algebra — Quick Check</h3>
+            </div>
+            <div class="quiz-card-bottom">
+              <div class="quiz-card-meta">
+                <span class="quizCardQuestionCount">10 questions</span>
+                <span class="quizCardTimeLimit">12 min</span>
+              </div>
+              <div class="quiz-card-footer">
+                <span class="badge badge-missed quizCardStatusBadge"
+                  >Auto‑submitted</span
+                >
+                <button
+                  type="button"
+                  class="btn btn-outline btn-sm startQuizBtn"
+                  data-quiz-id="3"
+                  disabled
+                >
+                  Completed
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
-  </aside>
-
-  <main class="main-area">
-    <div class="main-header">
-      <div>
-        <span class="eyebrow">Roll call</span>
-        <h1>Your quizzes</h1>
-      </div>
-    </div>
-
-    <div id="quizGrid" class="quiz-grid">
-
-      <!-- Not attempted -->
-      <div class="quiz-card" data-quiz-id="1">
-        <div class="quiz-card-top">
-          <span class="quiz-card-subject">Biology</span>
-          <h3 class="quiz-card-title">Cell Biology — Unit 3</h3>
-        </div>
-        <div class="quiz-card-bottom">
-          <div class="quiz-card-meta">
-            <span class="quizCardQuestionCount">12 questions</span>
-            <span class="quizCardTimeLimit">15 min</span>
-          </div>
-          <div class="quiz-card-footer">
-            <span class="badge badge-pending quizCardStatusBadge">Not attempted</span>
-            <button type="button" class="btn btn-gold btn-sm startQuizBtn" data-quiz-id="1">Start quiz</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Completed -->
-      <div class="quiz-card" data-quiz-id="2">
-        <div class="quiz-card-top">
-          <span class="quiz-card-subject">History</span>
-          <h3 class="quiz-card-title">World War II — Timeline</h3>
-        </div>
-        <div class="quiz-card-bottom">
-          <div class="quiz-card-meta">
-            <span class="quizCardQuestionCount">8 questions</span>
-            <span class="quizCardTimeLimit">10 min</span>
-          </div>
-          <div class="quiz-card-footer">
-            <span class="badge badge-done quizCardStatusBadge">Scored 6 / 8</span>
-            <button type="button" class="btn btn-outline btn-sm startQuizBtn" data-quiz-id="2" disabled>Completed</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Auto-submitted -->
-      <div class="quiz-card" data-quiz-id="3">
-        <div class="quiz-card-top">
-          <span class="quiz-card-subject">Mathematics</span>
-          <h3 class="quiz-card-title">Algebra — Quick Check</h3>
-        </div>
-        <div class="quiz-card-bottom">
-          <div class="quiz-card-meta">
-            <span class="quizCardQuestionCount">10 questions</span>
-            <span class="quizCardTimeLimit">12 min</span>
-          </div>
-          <div class="quiz-card-footer">
-            <span class="badge badge-missed quizCardStatusBadge">Auto‑submitted</span>
-            <button type="button" class="btn btn-outline btn-sm startQuizBtn" data-quiz-id="3" disabled>Completed</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </main>
-</div>
-
-</body>
+  </body>
 </html>
