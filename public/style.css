@@ -833,6 +833,29 @@ tbody tr:hover {
   color: var(--ink);
 }
 
+.notification {
+  position: fixed;
+  top: -100px; /* Hidden above the screen by default */
+  left: 50%;
+  transform: translateX(-50%); /* Centers it perfectly */
+  background-color: #3273dc; /* Nice blue color */
+  color: white;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: top 0.4s ease; /* Smooth slide effect */
+  z-index: 1000; /* Keeps it above everything else */
+}
+
+/* When this class is added via JavaScript, it slides down */
+.notification.show {
+  top: 20px;
+}
+
+.notification.error {
+  background-color: #f14668; /* Clean red error color */
+}
 /* ─────────────────────────────────────────────────────────
    SUMMARY STATS
 ───────────────────────────────────────────────────────── */

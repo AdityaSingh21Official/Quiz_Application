@@ -12,13 +12,19 @@ function validateQuestions(req, res, next) {
 
     if (typeof tempQuizTime !== "number" || Number.isNaN(tempQuizTime)) {
       return res.status(422).json({
-        message: "Invalid Request data",
+        message: "Invalid Quiz Time",
+      });
+    }
+
+    if (tempQuizTime <= 0) {
+      return res.status(422).json({
+        message: "Invalid Quiz Time",
       });
     }
 
     if (questions.length > 25) {
       return res.status(422).json({
-        message: "Invalid Request data",
+        message: "Maximum of 25 Questions Allowed Per Quiz",
       });
     }
 
@@ -30,14 +36,14 @@ function validateQuestions(req, res, next) {
 
       if (question.length <= 0) {
         return res.status(422).json({
-          message: "Invalid Request data",
+          message: "Invalid Question(s)",
         });
       }
 
       for (const key in options) {
         if (key.length <= 0) {
           return res.status(422).json({
-            message: "Invalid Request data",
+            message: "Invalid Option(s)",
           });
         }
 
@@ -49,7 +55,7 @@ function validateQuestions(req, res, next) {
 
     if (correctOptions !== questions.length / 2) {
       return res.status(422).json({
-        message: "Invalid Request data",
+        message: "Only 1 Correct option per Question",
       });
     }
 

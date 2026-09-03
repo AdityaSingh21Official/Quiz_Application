@@ -17,8 +17,6 @@ function authorise(req, res, next) {
     req.user = deConstruct;
     next();
   } catch (error) {
-    console.log("\n" + error + "\n");
-
     return res.status(401).json({
       message: "Invalid or Expired Token",
     });

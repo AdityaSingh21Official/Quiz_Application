@@ -93,117 +93,7 @@
           <div id="questionsBuilder">
             <!-- Sample question block (repeat this structure per question) -->
             <div class="question-block" data-question-index="0">
-              <div class="question-block-header">
-                <span class="question-index">Question 1</span>
-                <button type="button" class="remove-question-btn">
-                  Remove
-                </button>
-              </div>
-
-              <div class="field">
-                <label for="questionText-0">Question text</label>
-                <input
-                  class="input question-text-input"
-                  type="text"
-                  id="questionText-0"
-                  name="questionText-0"
-                  placeholder="What organelle produces ATP?"
-                  required
-                />
-              </div>
-
-              <div class="field" style="margin-bottom: 6px">
-                <label>Options — mark the correct one</label>
-
-                <div class="option-row">
-                  <span class="option-letter">A</span>
-                  <input
-                    class="input option-input"
-                    type="text"
-                    name="option-0-1"
-                    placeholder="Option A"
-                    required
-                  />
-                  <label class="correct-label">
-                    <input
-                      class="correct-radio"
-                      type="radio"
-                      name="correctOption-0"
-                      value="1"
-                    />
-                    Correct
-                  </label>
-                </div>
-
-                <div class="option-row">
-                  <span class="option-letter">B</span>
-                  <input
-                    class="input option-input"
-                    type="text"
-                    name="option-0-2"
-                    placeholder="Option B"
-                    required
-                  />
-                  <label class="correct-label">
-                    <input
-                      class="correct-radio"
-                      type="radio"
-                      name="correctOption-0"
-                      value="2"
-                    />
-                    Correct
-                  </label>
-                </div>
-
-                <div class="option-row">
-                  <span class="option-letter">C</span>
-                  <input
-                    class="input option-input"
-                    type="text"
-                    name="option-0-3"
-                    placeholder="Option C (optional)"
-                  />
-                  <label class="correct-label">
-                    <input
-                      class="correct-radio"
-                      type="radio"
-                      name="correctOption-0"
-                      value="3"
-                    />
-                    Correct
-                  </label>
-                </div>
-
-                <div class="option-row">
-                  <span class="option-letter">D</span>
-                  <input
-                    class="input option-input"
-                    type="text"
-                    name="option-0-4"
-                    placeholder="Option D (optional)"
-                  />
-                  <label class="correct-label">
-                    <input
-                      class="correct-radio"
-                      type="radio"
-                      name="correctOption-0"
-                      value="4"
-                    />
-                    Correct
-                  </label>
-                </div>
-
-                <p class="hint">
-                  Up to 4 options per question. At least 2 are required.
-                </p>
-              </div>
-            </div>
-            <!-- /question-block -->
-          </div>
-
-          <!-- Hidden template for JS to clone when "Add question" is clicked -->
-          <template id="questionBlockTemplate">
-            <div class="question-block" data-question-index="">
+              <!-- Assuming index 0 for this example -->
               <div class="question-block-header">
                 <span class="question-index">Question</span>
                 <button type="button" class="remove-question-btn">
@@ -221,6 +111,7 @@
               </div>
               <div class="field" style="margin-bottom: 6px">
                 <label>Options — mark the correct one</label>
+
                 <div class="option-row">
                   <span class="option-letter">A</span>
                   <input
@@ -229,11 +120,18 @@
                     placeholder="Option A"
                     required
                   />
-                  <label class="correct-label"
-                    ><input class="correct-radio" type="radio" value="1" />
-                    Correct</label
-                  >
+                  <label class="correct-label">
+                    <input
+                      class="correct-radio"
+                      type="radio"
+                      name="correct-option-0"
+                      value="1"
+                      required
+                    />
+                    Correct
+                  </label>
                 </div>
+
                 <div class="option-row">
                   <span class="option-letter">B</span>
                   <input
@@ -242,41 +140,59 @@
                     placeholder="Option B"
                     required
                   />
-                  <label class="correct-label"
-                    ><input class="correct-radio" type="radio" value="2" />
-                    Correct</label
-                  >
+                  <label class="correct-label">
+                    <input
+                      class="correct-radio"
+                      type="radio"
+                      name="correct-option-0"
+                      value="2"
+                    />
+                    Correct
+                  </label>
                 </div>
+
                 <div class="option-row">
                   <span class="option-letter">C</span>
                   <input
                     class="input option-input"
                     type="text"
-                    placeholder="Option C (optional)"
+                    placeholder="Option C "
                   />
-                  <label class="correct-label"
-                    ><input class="correct-radio" type="radio" value="3" />
-                    Correct</label
-                  >
+                  <label class="correct-label">
+                    <input
+                      class="correct-radio"
+                      type="radio"
+                      name="correct-option-0"
+                      value="3"
+                    />
+                    Correct
+                  </label>
                 </div>
+
                 <div class="option-row">
                   <span class="option-letter">D</span>
                   <input
                     class="input option-input"
                     type="text"
-                    placeholder="Option D (optional)"
+                    placeholder="Option D "
                   />
-                  <label class="correct-label"
-                    ><input class="correct-radio" type="radio" value="4" />
-                    Correct</label
-                  >
+                  <label class="correct-label">
+                    <input
+                      class="correct-radio"
+                      type="radio"
+                      name="correct-option-0"
+                      value="4"
+                    />
+                    Correct
+                  </label>
                 </div>
-                <p class="hint">
-                  Up to 4 options per question. At least 2 are required.
-                </p>
               </div>
             </div>
-          </template>
+
+            <!-- /question-block -->
+          </div>
+
+          <!-- Hidden template for JS to clone when "Add question" is clicked -->
 
           <div
             style="
@@ -364,5 +280,257 @@
         </div>
       </main>
     </div>
+    <div id="notification" class="notification"></div>
   </body>
+  <script>
+    /*
+    API payload structure :
+    {
+    "quizTitle": "Test Quiz 1",
+    "quizTime" : "15",
+    "questions" : [
+        "Question Text 1",
+        {"Option 1 text" : true,
+        "Text of Option 2" : false,
+        "text Of Option 3" : false
+        },
+
+        "Text of Question 2",
+        {"Option 1 text" : false,
+        "Text of Option 2" : true,
+        "text Of Option 3" : false
+        }
+    ]
+}
+    */
+
+    function renderQuestionIndex() {
+      const indexes = document.getElementsByClassName("question-index");
+      for (let i = 0; i < indexes.length; i++) {
+        indexes[i].textContent = `Question ${i + 1}`;
+      }
+    }
+
+    function showToast(message, isError = false) {
+      const notification = document.getElementById("notification");
+      notification.textContent = message;
+      notification.classList.toggle("error", isError);
+      notification.classList.add("show");
+      setTimeout(() => {
+        notification.classList.remove("show");
+      }, 3000);
+    }
+
+    let iterator = 1;
+
+    function questionBlockTemplate(radioGroupName) {
+      return `
+    <div class="question-block" data-question-index="0">
+      <div class="question-block-header">
+        <span class="question-index">Question</span>
+        <button type="button" class="remove-question-btn">Remove</button>
+      </div>
+      <div class="field">
+        <label>Question text</label>
+        <input class="input question-text-input" type="text" placeholder="Type the question…" required />
+      </div>
+      <div class="field" style="margin-bottom: 6px">
+        <label>Options — mark the correct one</label>
+
+        <div class="option-row">
+          <span class="option-letter">A</span>
+          <input class="input option-input" type="text" placeholder="Option A" required />
+          <label class="correct-label">
+            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="1" required />
+            Correct
+          </label>
+        </div>
+
+        <div class="option-row">
+          <span class="option-letter">B</span>
+          <input class="input option-input" type="text" placeholder="Option B" required />
+          <label class="correct-label">
+            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="2" />
+            Correct
+          </label>
+        </div>
+
+        <div class="option-row">
+          <span class="option-letter">C</span>
+          <input class="input option-input" type="text" placeholder="Option C " />
+          <label class="correct-label">
+            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="3" />
+            Correct
+          </label>
+        </div>
+
+        <div class="option-row">
+          <span class="option-letter">D</span>
+          <input class="input option-input" type="text" placeholder="Option D " />
+          <label class="correct-label">
+            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="4" />
+            Correct
+          </label>
+        </div>
+      </div>
+    </div>
+  `;
+    }
+
+    document
+      .getElementById("addQuestionBtn")
+      .addEventListener("click", function () {
+        document
+          .getElementById("questionsBuilder")
+          .insertAdjacentHTML("beforeend", questionBlockTemplate(iterator));
+
+        renderQuestionIndex();
+        iterator++;
+      });
+
+    document
+      .getElementById("questionsBuilder")
+      .addEventListener("click", function (e) {
+        if (e.target.classList.contains("remove-question-btn")) {
+          e.target.closest(".question-block").remove();
+          renderQuestionIndex();
+        }
+      });
+    function getQuestionsData() {
+      const result = [];
+      const questionBlocks = document.querySelectorAll(".question-block");
+
+      if (questionBlocks.length === 0) {
+        showToast("Please add at least 1 question", true);
+        return null;
+      }
+
+      for (const block of questionBlocks) {
+        const questionInput = block.querySelector(".question-text-input");
+        const questionText = questionInput ? questionInput.value.trim() : "";
+
+        if (questionText === "") {
+          showToast("Please Enter Valid Question(s)", true);
+          return null;
+        }
+
+        const optionRows = block.querySelectorAll(".option-row");
+
+        const optionsList = [];
+        let correctCount = 0;
+
+        for (const row of optionRows) {
+          const optionInput = row.querySelector(".option-input");
+          const radioInput = row.querySelector(".correct-radio");
+
+          if (optionInput && optionInput.value.trim() !== "") {
+            const optionText = optionInput.value.trim();
+            const isCorrect = radioInput ? radioInput.checked : false;
+
+            if (isCorrect) correctCount++;
+            optionsList.push({ text: optionText, isCorrect });
+          }
+        }
+
+        if (correctCount !== 1) {
+          showToast(
+            `Please select exactly 1 correct answer for "${questionText}"`,
+            true,
+          );
+          return null;
+        }
+
+        if (optionsList.length < 2) {
+          showToast(
+            `Please enter at least 2 options for "${questionText}"`,
+            true,
+          );
+          return null;
+        }
+
+        const seenTexts = new Set();
+        for (const opt of optionsList) {
+          if (seenTexts.has(opt.text)) {
+            showToast(
+              `Duplicate option "${opt.text}" in "${questionText}" — options must be unique`,
+              true,
+            );
+            return null;
+          }
+          seenTexts.add(opt.text);
+        }
+
+        const optionsObj = {};
+        for (const opt of optionsList) {
+          optionsObj[opt.text] = opt.isCorrect;
+        }
+
+        result.push(questionText);
+        result.push(optionsObj);
+      }
+
+      return result;
+    }
+
+    document
+      .getElementById("submitQuizBtn")
+      .addEventListener("click", async function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const quizTitle = document.getElementById("quizTitle").value.trim();
+        const quizTime = document.getElementById("quizTime").value.trim();
+
+        if (quizTitle.length < 3) {
+          showToast("Invalid Title", true);
+          return;
+        }
+
+        if (quizTime <= 0 || quizTime > 120) {
+          showToast("Invalid Time", true);
+          return;
+        }
+
+        const questions = getQuestionsData();
+
+        if (questions === null) {
+          return;
+        }
+
+        const token = localStorage.getItem("token");
+
+        const response = await fetch("api/teacher/createquiz", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            quizTitle: quizTitle,
+            quizTime: quizTime,
+            questions: questions,
+          }),
+        });
+
+        const backendData = await response.json();
+
+        if (!response.ok) {
+          showToast(backendData.message, true);
+          return;
+        }
+
+        showToast(backendData.message);
+        document.getElementById("resetQuizFormBtn").click();
+      });
+
+    document
+      .getElementById("resetQuizFormBtn")
+      .addEventListener("click", function (e) {
+        e.preventDefault();
+        document.getElementById("questionsBuilder").innerHTML =
+          questionBlockTemplate(0);
+        iterator = 1;
+        renderQuestionIndex();
+      });
+  </script>
 </html>
