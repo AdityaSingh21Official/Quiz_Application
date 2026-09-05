@@ -1,5 +1,7 @@
 .env*
 
+controllers/test.js
+
 node_modules/
 
 logs

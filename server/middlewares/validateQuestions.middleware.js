@@ -1,3 +1,23 @@
+const payload = {
+  quizTitle: "title",
+  quizTime: "time",
+  questions: [
+    {
+      question_text: "question _ text ",
+      options: [
+        {
+          option_text: "option 1 text",
+          isCorrect: true,
+        },
+        {
+          option_text: "option 2 text ",
+          isCorrect: false,
+        },
+      ],
+    },
+  ],
+};
+
 function validateQuestions(req, res, next) {
   try {
     const { quizTitle, quizTime, questions } = req.body;
@@ -22,41 +42,54 @@ function validateQuestions(req, res, next) {
       });
     }
 
-    if (questions.length > 25) {
+    if (questions.length === 0) {
       return res.status(422).json({
-        message: "Maximum of 25 Questions Allowed Per Quiz",
+        message: "Atleast 1 question Required",
       });
     }
 
-    let correctOptions = 0;
+    if (questions.length > 100) {
+      return res.status(422).json({
+        message: "Maximum of 100 Questions Allowed Per Quiz",
+      });
+    }
 
-    for (let i = 0; i < questions.length; i += 2) {
-      const question = questions[i];
-      const options = questions[i + 1];
-
-      if (question.length <= 0) {
+    for (let i = 0; i < questions.length; i++) {
+      if (questions[i]["question_text"].length < 3) {
         return res.status(422).json({
-          message: "Invalid Question(s)",
+          message: "Invalid Question",
+          data: questions[i]["question_text"],
         });
       }
 
-      for (const key in options) {
-        if (key.length <= 0) {
+      if (!questions[i].options || questions[i].options.length !== 4) {
+        return res.status(422).json({
+          message: "Require 4 Options per question",
+          data: questions[i].options,
+        });
+      }
+
+      let correctCount = 0;
+      for (let j = 0; j < 4; j++) {
+        if (questions[i].options[j].isCorrect === undefined) {
           return res.status(422).json({
-            message: "Invalid Option(s)",
+            message: "Invalid Data",
           });
         }
-
-        if (options[key] === true) {
-          correctOptions++;
+        if (questions[i].options[j].isCorrect == true) {
+          correctCount++;
         }
       }
-    }
 
-    if (correctOptions !== questions.length / 2) {
-      return res.status(422).json({
-        message: "Only 1 Correct option per Question",
-      });
+      if (correctCount > 1) {
+        return res.status(422).json({
+          message: "Only 1 Correct option per Question",
+        });
+      } else if (correctCount < 1) {
+        return res.status(422).json({
+          message: "1 Correct option per Question",
+        });
+      }
     }
 
     next();
