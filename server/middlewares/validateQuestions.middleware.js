@@ -22,7 +22,7 @@ function validateQuestions(req, res, next) {
   try {
     const { quizTitle, quizTime, questions } = req.body;
 
-    if (!quizTime || !quizTitle || !questions) {
+    if (!quizTime || !quizTitle || !questions || !Array.isArray(questions)) {
       return res.status(422).json({
         message: "Invalid Request data",
       });
@@ -55,14 +55,21 @@ function validateQuestions(req, res, next) {
     }
 
     for (let i = 0; i < questions.length; i++) {
-      if (questions[i]["question_text"].length < 3) {
+      if (
+        typeof questions[i].question_text !== "string" ||
+        questions[i]["question_text"].length < 3
+      ) {
         return res.status(422).json({
           message: "Invalid Question",
           data: questions[i]["question_text"],
         });
       }
 
-      if (!questions[i].options || questions[i].options.length !== 4) {
+      if (
+        !questions[i].options ||
+        !Array.isArray(questions[i].options) ||
+        questions[i].options.length !== 4
+      ) {
         return res.status(422).json({
           message: "Require 4 Options per question",
           data: questions[i].options,
@@ -71,9 +78,22 @@ function validateQuestions(req, res, next) {
 
       let correctCount = 0;
       for (let j = 0; j < 4; j++) {
-        if (questions[i].options[j].isCorrect === undefined) {
+        if (
+          typeof questions[i].options[j] !== "object" ||
+          questions[i].options[j].isCorrect === undefined
+        ) {
           return res.status(422).json({
             message: "Invalid Data",
+          });
+        }
+
+        if (
+          questions[i].options[j].option_text === undefined ||
+          questions[i].options[j].option_text.length < 3
+        ) {
+          return res.status(422).json({
+            message: "Invalid Option",
+            data: questions[i].options[j],
           });
         }
         if (questions[i].options[j].isCorrect == true) {
@@ -97,7 +117,7 @@ function validateQuestions(req, res, next) {
     console.log("MIDDLEWARE ERROR : validateQuestions.middleware\n" + error);
 
     res.status(500).json({
-      message: "Internal Server Error",
+      message: "Invalid Data Structure",
     });
   }
 }

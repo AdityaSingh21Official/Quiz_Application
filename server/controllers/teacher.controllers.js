@@ -124,7 +124,22 @@ async function deleteQuiz(req, res) {
     await thisConn.beginTransaction();
 
     const userId = req.user.userId;
-    const { quizId } = req.body;
+    const { quizId, password } = req.body;
+
+    const [getPassword] = await thisConn.query(
+      "select apassword from admin where aid = ?",
+      [userId],
+    );
+
+    if (
+      !getPassword ||
+      getPassword.length === 0 ||
+      password !== getPassword[0]["apassword"]
+    ) {
+      return res.status(401).json({
+        message: "Invalid Password",
+      });
+    }
 
     const [quiz] = await thisConn.query(
       "select * from quiz where quiz_id = ?",
@@ -188,7 +203,7 @@ async function deleteQuiz(req, res) {
 async function getThisQuiz(req, res) {
   try {
     const userId = req.user.userId;
-    const { quizId } = req.body;
+    const quizId = req.params.id;
 
     const [quiz] = await db.query("select * from quiz where quiz_id = ?", [
       quizId,

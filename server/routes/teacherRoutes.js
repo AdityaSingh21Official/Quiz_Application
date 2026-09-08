@@ -24,7 +24,7 @@ teacher.get("/teacher/myQuizes", authorise, isTeacher, getMyQuizes);
 
 teacher.delete("/teacher/deleteQuiz", authorise, isTeacher, deleteQuiz);
 
-teacher.get("/teacher/getquiz", authorise, isTeacher, getThisQuiz);
+teacher.get("/teacher/getquiz/:id", authorise, isTeacher, getThisQuiz);
 
 teacher.put(
   "/teacher/updatequiz",

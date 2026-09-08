@@ -833,6 +833,9 @@ tbody tr:hover {
   color: var(--ink);
 }
 
+/* ─────────────────────────────────────────────────────────
+   NOTIFICATION TOAST
+───────────────────────────────────────────────────────── */
 .notification {
   position: fixed;
   top: -100px; /* Hidden above the screen by default */
@@ -856,6 +859,97 @@ tbody tr:hover {
 .notification.error {
   background-color: #f14668; /* Clean red error color */
 }
+
+/* ─────────────────────────────────────────────────────────
+   MODAL (single source of truth — no duplicate blocks)
+───────────────────────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 21, 48, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn var(--t-mid) var(--ease);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal-box {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 36px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow-l);
+  text-align: center;
+  animation: modalIn var(--t-slow) var(--ease-back);
+  border: 1px solid var(--rule);
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-box h3 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.modal-box p {
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.modal-actions .btn {
+  flex: 1;
+}
+
+#confirmDeleteBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Large modal variant — used for the edit-quiz modal.
+   Only overrides sizing; everything else is inherited from .modal-box.
+   Uses max-width (not a fixed width) so it stays responsive and always
+   wins over the base .modal-box max-width regardless of source order,
+   because it's the more specific rule applied second. */
+.modal-box.modal-box-lg {
+  width: 90%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  text-align: left;
+}
+
 /* ─────────────────────────────────────────────────────────
    SUMMARY STATS
 ───────────────────────────────────────────────────────── */
@@ -1607,74 +1701,6 @@ tbody tr:hover {
 }
 
 /* ─────────────────────────────────────────────────────────
-   MODAL
-───────────────────────────────────────────────────────── */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 21, 48, 0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  animation: fadeIn var(--t-mid) var(--ease);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-box {
-  background: var(--surface);
-  border-radius: var(--r-l);
-  padding: 36px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: var(--shadow-l);
-  text-align: center;
-  animation: modalIn var(--t-slow) var(--ease-back);
-  border: 1px solid var(--rule);
-}
-
-@keyframes modalIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modal-box h3 {
-  font-size: 22px;
-  margin-bottom: 10px;
-}
-
-.modal-box p {
-  font-size: 14.5px;
-  line-height: 1.6;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 26px;
-}
-
-.modal-actions .btn {
-  flex: 1;
-}
-
-/* ─────────────────────────────────────────────────────────
    RESULT PAGE — the paper handed back to you
 ───────────────────────────────────────────────────────── */
 .result-shell {
@@ -2008,6 +2034,11 @@ tbody tr:hover {
 
   .result-card {
     padding: 36px 28px 36px 38px;
+  }
+
+  .modal-box.modal-box-lg {
+    max-width: 94vw;
+    max-height: 90vh;
   }
 }
 

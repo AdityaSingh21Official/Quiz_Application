@@ -231,7 +231,7 @@
               </tr>
             </thead>
             <tbody id="quizListBody">
-              <tr class="quiz-list-row" data-quiz-id="1">
+              <!-- <tr class="quiz-list-row" data-quiz-id="1">
                 <td class="quizTitleText">Cell Biology — Unit 3</td>
                 <td class="quizQuestionCount">12 questions</td>
                 <td class="quizTimeText">15 min</td>
@@ -252,153 +252,212 @@
                     Delete
                   </button>
                 </td>
-              </tr>
-              <tr class="quiz-list-row" data-quiz-id="2">
-                <td class="quizTitleText">World War II — Timeline</td>
-                <td class="quizQuestionCount">8 questions</td>
-                <td class="quizTimeText">10 min</td>
-                <td class="quizCreatedDate">Aug 12, 2026</td>
-                <td>
-                  <button
-                    type="button"
-                    class="btn btn-ghost btn-sm editQuizBtn"
-                    data-quiz-id="2"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-danger-ghost btn-sm deleteQuizBtn"
-                    data-quiz-id="2"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
+              </tr> -->
             </tbody>
           </table>
         </div>
       </main>
     </div>
     <div id="notification" class="notification"></div>
+    <div id="deleteModalOverlay" class="modal-overlay">
+      <div class="modal-box">
+        <h3>Confirm Deletion</h3>
+        <p>This action cannot be undone. Enter your password to confirm.</p>
+
+        <input
+          type="password"
+          id="deletePasswordInput"
+          class="input"
+          placeholder="Enter password"
+        />
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            id="cancelDeleteBtn"
+            class="btn btn-ghost btn-sm"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="confirmDeleteBtn"
+            class="btn btn-danger-ghost btn-sm"
+            disabled
+          >
+            Confirm Delete
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="editModalOverlay" class="modal-overlay">
+      <div class="modal-box modal-box-lg">
+        <form id="editQuizForm" class="card card-pad">
+          <div class="card-header">
+            <h2>Edit quiz</h2>
+          </div>
+
+          <div class="input-row">
+            <div class="field">
+              <label for="editQuizTitle">Quiz title</label>
+              <input
+                class="input"
+                type="text"
+                id="editQuizTitle"
+                placeholder="e.g. Cell Biology — Unit 3"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="editQuizTime">Time limit</label>
+              <div class="input-with-suffix">
+                <input
+                  class="input"
+                  type="number"
+                  id="editQuizTime"
+                  min="1"
+                  placeholder="15"
+                  required
+                />
+                <span class="suffix">minutes</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-header" style="margin-top: 10px">
+            <h3>Questions</h3>
+            <button
+              type="button"
+              id="editAddQuestionBtn"
+              class="btn btn-outline btn-sm"
+            >
+              + Add question
+            </button>
+          </div>
+
+          <div id="editQuestionsBuilder"></div>
+
+          <div
+            style="
+              display: flex;
+              justify-content: flex-end;
+              gap: 10px;
+              margin-top: 10px;
+            "
+          >
+            <button type="button" id="cancelEditBtn" class="btn btn-ghost">
+              Cancel
+            </button>
+            <button type="submit" id="updateQuizBtn" class="btn btn-primary">
+              Update quiz
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </body>
   <script>
-    /*
-    API payload structure :
-    {
-    "quizTitle": "Test Quiz 1",
-    "quizTime" : "15",
-    "questions" : [
-        "Question Text 1",
-        {"Option 1 text" : true,
-        "Text of Option 2" : false,
-        "text Of Option 3" : false
-        },
+    const table = document.getElementById("quizListBody");
+    const notification = document.getElementById("notification");
 
-        "Text of Question 2",
-        {"Option 1 text" : false,
-        "Text of Option 2" : true,
-        "text Of Option 3" : false
-        }
-    ]
-}
-    */
+    const deleteModalOverlay = document.getElementById("deleteModalOverlay");
+    const deletePasswordInput = document.getElementById("deletePasswordInput");
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
 
-    function renderQuestionIndex() {
-      const indexes = document.getElementsByClassName("question-index");
+    const questionsBuilder = document.getElementById("questionsBuilder");
+    const addQuestionBtn = document.getElementById("addQuestionBtn");
+    const submitQuizBtn = document.getElementById("submitQuizBtn");
+    const resetQuizFormBtn = document.getElementById("resetQuizFormBtn");
+
+    const editModalOverlay = document.getElementById("editModalOverlay");
+    const editQuestionsBuilder = document.getElementById(
+      "editQuestionsBuilder",
+    );
+    const editAddQuestionBtn = document.getElementById("editAddQuestionBtn");
+    const editQuizForm = document.getElementById("editQuizForm");
+    const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+    let itemToDelete = null;
+    let trToDelete = null;
+
+    let createIterator = 1;
+    let editIterator = 1;
+    let quizIdBeingEdited = null;
+
+    document.addEventListener("DOMContentLoaded", renderExistingQuestions);
+
+    function showToast(message, isError = false) {
+      notification.textContent = message;
+      notification.classList.toggle("error", isError);
+      notification.classList.add("show");
+      setTimeout(() => notification.classList.remove("show"), 3000);
+    }
+
+    function questionBlockTemplate(radioGroupName) {
+      return `
+<div class="question-block" data-question-index="0">
+  <div class="question-block-header">
+    <span class="question-index">Question</span>
+    <button type="button" class="remove-question-btn">Remove</button>
+  </div>
+  <div class="field">
+    <label>Question text</label>
+    <input class="input question-text-input" type="text" placeholder="Type the question…" required />
+  </div>
+  <div class="field" style="margin-bottom: 6px">
+    <label>Options — mark the correct one</label>
+
+    <div class="option-row">
+      <span class="option-letter">A</span>
+      <input class="input option-input" type="text" placeholder="Option A" required />
+      <label class="correct-label">
+        <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="1" required />
+        Correct
+      </label>
+    </div>
+
+    <div class="option-row">
+      <span class="option-letter">B</span>
+      <input class="input option-input" type="text" placeholder="Option B" required />
+      <label class="correct-label">
+        <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="2" />
+        Correct
+      </label>
+    </div>
+
+    <div class="option-row">
+      <span class="option-letter">C</span>
+      <input class="input option-input" type="text" placeholder="Option C " />
+      <label class="correct-label">
+        <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="3" />
+        Correct
+      </label>
+    </div>
+
+    <div class="option-row">
+      <span class="option-letter">D</span>
+      <input class="input option-input" type="text" placeholder="Option D " />
+      <label class="correct-label">
+        <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="4" />
+        Correct
+      </label>
+    </div>
+  </div>
+</div>
+`;
+    }
+
+    function renderQuestionIndex(container) {
+      const indexes = container.getElementsByClassName("question-index");
       for (let i = 0; i < indexes.length; i++) {
         indexes[i].textContent = `Question ${i + 1}`;
       }
     }
 
-    function showToast(message, isError = false) {
-      const notification = document.getElementById("notification");
-      notification.textContent = message;
-      notification.classList.toggle("error", isError);
-      notification.classList.add("show");
-      setTimeout(() => {
-        notification.classList.remove("show");
-      }, 3000);
-    }
-
-    let iterator = 1;
-
-    function questionBlockTemplate(radioGroupName) {
-      return `
-    <div class="question-block" data-question-index="0">
-      <div class="question-block-header">
-        <span class="question-index">Question</span>
-        <button type="button" class="remove-question-btn">Remove</button>
-      </div>
-      <div class="field">
-        <label>Question text</label>
-        <input class="input question-text-input" type="text" placeholder="Type the question…" required />
-      </div>
-      <div class="field" style="margin-bottom: 6px">
-        <label>Options — mark the correct one</label>
-
-        <div class="option-row">
-          <span class="option-letter">A</span>
-          <input class="input option-input" type="text" placeholder="Option A" required />
-          <label class="correct-label">
-            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="1" required />
-            Correct
-          </label>
-        </div>
-
-        <div class="option-row">
-          <span class="option-letter">B</span>
-          <input class="input option-input" type="text" placeholder="Option B" required />
-          <label class="correct-label">
-            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="2" />
-            Correct
-          </label>
-        </div>
-
-        <div class="option-row">
-          <span class="option-letter">C</span>
-          <input class="input option-input" type="text" placeholder="Option C " />
-          <label class="correct-label">
-            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="3" />
-            Correct
-          </label>
-        </div>
-
-        <div class="option-row">
-          <span class="option-letter">D</span>
-          <input class="input option-input" type="text" placeholder="Option D " />
-          <label class="correct-label">
-            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="4" />
-            Correct
-          </label>
-        </div>
-      </div>
-    </div>
-  `;
-    }
-
-    document
-      .getElementById("addQuestionBtn")
-      .addEventListener("click", function () {
-        document
-          .getElementById("questionsBuilder")
-          .insertAdjacentHTML("beforeend", questionBlockTemplate(iterator));
-
-        renderQuestionIndex();
-        iterator++;
-      });
-
-    document
-      .getElementById("questionsBuilder")
-      .addEventListener("click", function (e) {
-        if (e.target.classList.contains("remove-question-btn")) {
-          e.target.closest(".question-block").remove();
-          renderQuestionIndex();
-        }
-      });
-    function getQuestionsData() {
+    function getQuestionsData(container) {
       const result = [];
-      const questionBlocks = document.querySelectorAll(".question-block");
+      const questionBlocks = container.querySelectorAll(".question-block");
 
       if (questionBlocks.length === 0) {
         showToast("Please add at least 1 question", true);
@@ -407,15 +466,14 @@
 
       for (const block of questionBlocks) {
         const questionInput = block.querySelector(".question-text-input");
-        const questionText = questionInput ? questionInput.value.trim() : "";
+        const question_text = questionInput ? questionInput.value.trim() : "";
 
-        if (questionText === "") {
+        if (question_text === "") {
           showToast("Please Enter Valid Question(s)", true);
           return null;
         }
 
         const optionRows = block.querySelectorAll(".option-row");
-
         const optionsList = [];
         let correctCount = 0;
 
@@ -424,17 +482,17 @@
           const radioInput = row.querySelector(".correct-radio");
 
           if (optionInput && optionInput.value.trim() !== "") {
-            const optionText = optionInput.value.trim();
+            const option_text = optionInput.value.trim();
             const isCorrect = radioInput ? radioInput.checked : false;
 
             if (isCorrect) correctCount++;
-            optionsList.push({ text: optionText, isCorrect });
+            optionsList.push({ option_text, isCorrect });
           }
         }
 
         if (correctCount !== 1) {
           showToast(
-            `Please select exactly 1 correct answer for "${questionText}"`,
+            `Please select exactly 1 correct answer for "${question_text}"`,
             true,
           );
           return null;
@@ -442,7 +500,7 @@
 
         if (optionsList.length < 2) {
           showToast(
-            `Please enter at least 2 options for "${questionText}"`,
+            `Please enter at least 2 options for "${question_text}"`,
             true,
           );
           return null;
@@ -450,87 +508,324 @@
 
         const seenTexts = new Set();
         for (const opt of optionsList) {
-          if (seenTexts.has(opt.text)) {
+          if (seenTexts.has(opt.option_text)) {
             showToast(
-              `Duplicate option "${opt.text}" in "${questionText}" — options must be unique`,
+              `Duplicate option "${opt.option_text}" in "${question_text}" — options must be unique`,
               true,
             );
             return null;
           }
-          seenTexts.add(opt.text);
+          seenTexts.add(opt.option_text);
         }
 
-        const optionsObj = {};
-        for (const opt of optionsList) {
-          optionsObj[opt.text] = opt.isCorrect;
-        }
-
-        result.push(questionText);
-        result.push(optionsObj);
+        result.push({ question_text, options: optionsList });
       }
 
       return result;
     }
 
-    document
-      .getElementById("submitQuizBtn")
-      .addEventListener("click", async function (e) {
-        e.preventDefault();
-        e.stopPropagation();
+    function addQuestionBlock(container, iterator) {
+      container.insertAdjacentHTML(
+        "beforeend",
+        questionBlockTemplate(iterator),
+      );
+      renderQuestionIndex(container);
+    }
 
-        const quizTitle = document.getElementById("quizTitle").value.trim();
-        const quizTime = document.getElementById("quizTime").value.trim();
-
-        if (quizTitle.length < 3) {
-          showToast("Invalid Title", true);
-          return;
+    function bindRemoveQuestionHandler(container) {
+      container.addEventListener("click", function (e) {
+        if (e.target.classList.contains("remove-question-btn")) {
+          e.target.closest(".question-block").remove();
+          renderQuestionIndex(container);
         }
+      });
+    }
 
-        if (quizTime <= 0 || quizTime > 120) {
-          showToast("Invalid Time", true);
-          return;
-        }
+    function validateQuizMeta(titleInput, timeInput) {
+      const quizTitle = titleInput.value.trim();
+      const quizTime = timeInput.value.trim();
 
-        const questions = getQuestionsData();
+      if (quizTitle.length < 3) {
+        showToast("Invalid Title", true);
+        return null;
+      }
 
-        if (questions === null) {
-          return;
-        }
+      if (quizTime <= 0 || quizTime > 120) {
+        showToast("Invalid Time", true);
+        return null;
+      }
 
-        const token = localStorage.getItem("token");
+      return { quizTitle, quizTime };
+    }
 
-        const response = await fetch("api/teacher/createquiz", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            quizTitle: quizTitle,
-            quizTime: quizTime,
-            questions: questions,
-          }),
+    async function renderExistingQuestions() {
+      const response = await fetch("/api/teacher/myQuizes", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const data = await response.json();
+
+      for (let i = 0; i < data.data.length; i++) {
+        const temp = document.createElement("tr");
+        temp.classList.add("quiz-list-row");
+        temp.dataset.quizId = data.data[i][0];
+
+        const created = data.data[i][4].split("T")[0];
+
+        temp.innerHTML = `<td class="quizTitleText">${data.data[i][1]}</td>
+      <td class="quizQuestionCount">${data.data[i][2]}</td>
+      <td class="quizTimeText">${data.data[i][3]}</td>
+      <td class="quizCreatedDate">${created}</td>
+      <td>
+        <button type="button" class="btn btn-ghost btn-sm editQuizBtn">Edit</button>
+        <button type="button" class="btn btn-danger-ghost btn-sm deleteQuizBtn">Delete</button>
+      </td>`;
+
+        table.appendChild(temp);
+      }
+    }
+
+    table.addEventListener("click", function (e) {
+      const row = e.target.closest(".quiz-list-row");
+      if (!row) return;
+
+      const quizId = row.dataset.quizId;
+
+      if (e.target.classList.contains("deleteQuizBtn")) {
+        openDeleteModal(quizId, row);
+      }
+
+      if (e.target.classList.contains("editQuizBtn")) {
+        openEditModal(quizId);
+        console.log(quizId);
+      }
+    });
+
+    function openDeleteModal(id, row) {
+      itemToDelete = id;
+      trToDelete = row;
+      deletePasswordInput.value = "";
+      confirmDeleteBtn.disabled = true;
+      deleteModalOverlay.classList.add("show");
+      deletePasswordInput.focus();
+    }
+
+    function closeDeleteModal() {
+      deleteModalOverlay.classList.remove("show");
+      itemToDelete = null;
+      trToDelete = null;
+    }
+
+    deletePasswordInput.addEventListener("input", function () {
+      confirmDeleteBtn.disabled = deletePasswordInput.value.trim() === "";
+    });
+
+    cancelDeleteBtn.addEventListener("click", closeDeleteModal);
+
+    deleteModalOverlay.addEventListener("click", function (e) {
+      if (e.target === deleteModalOverlay) closeDeleteModal();
+    });
+
+    confirmDeleteBtn.addEventListener("click", async function () {
+      const password = deletePasswordInput.value.trim();
+
+      if (!password) {
+        showToast("Password is required", true);
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch("api/teacher/deleteQuiz", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ password, quizId: itemToDelete }),
+      });
+
+      const backendData = await response.json();
+
+      if (!response.ok) {
+        showToast(backendData.message, true);
+        return;
+      }
+
+      trToDelete.remove();
+      showToast(backendData.message);
+      closeDeleteModal();
+    });
+
+    addQuestionBtn.addEventListener("click", function () {
+      addQuestionBlock(questionsBuilder, createIterator);
+      createIterator++;
+    });
+
+    bindRemoveQuestionHandler(questionsBuilder);
+
+    submitQuizBtn.addEventListener("click", async function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const meta = validateQuizMeta(
+        document.getElementById("quizTitle"),
+        document.getElementById("quizTime"),
+      );
+
+      if (!meta) return;
+
+      const questions = getQuestionsData(questionsBuilder);
+
+      if (questions === null) return;
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch("api/teacher/createquiz", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          quizTitle: meta.quizTitle,
+          quizTime: meta.quizTime,
+          questions,
+        }),
+      });
+
+      const backendData = await response.json();
+
+      if (!response.ok) {
+        showToast(backendData.message, true);
+        return;
+      }
+
+      showToast(backendData.message);
+      resetQuizFormBtn.click();
+    });
+
+    resetQuizFormBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      questionsBuilder.innerHTML = questionBlockTemplate(0);
+      createIterator = 1;
+      renderQuestionIndex(questionsBuilder);
+    });
+
+    async function openEditModal(quizId) {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`api/teacher/getQuiz/${quizId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const backendData = await response.json();
+
+      if (!response.ok) {
+        showToast(backendData.message, true);
+        return;
+      }
+
+      quizIdBeingEdited = quizId;
+
+      document.getElementById("editQuizTitle").value = backendData.data.title;
+      document.getElementById("editQuizTime").value =
+        backendData.data.timeLimit;
+
+      editQuestionsBuilder.innerHTML = "";
+      editIterator = 1;
+
+      backendData.data.questions.forEach(function (q) {
+        addQuestionBlock(editQuestionsBuilder, editIterator);
+        editIterator++;
+
+        const block = editQuestionsBuilder.lastElementChild;
+        block.querySelector(".question-text-input").value = q.question_text;
+
+        const optionInputs = block.querySelectorAll(".option-input");
+        const radioInputs = block.querySelectorAll(".correct-radio");
+
+        q.options.forEach(function (opt, i) {
+          if (optionInputs[i]) {
+            optionInputs[i].value = opt.option_text;
+            if (opt.isCorrect) radioInputs[i].checked = true;
+          }
         });
-
-        const backendData = await response.json();
-
-        if (!response.ok) {
-          showToast(backendData.message, true);
-          return;
-        }
-
-        showToast(backendData.message);
-        document.getElementById("resetQuizFormBtn").click();
       });
 
-    document
-      .getElementById("resetQuizFormBtn")
-      .addEventListener("click", function (e) {
-        e.preventDefault();
-        document.getElementById("questionsBuilder").innerHTML =
-          questionBlockTemplate(0);
-        iterator = 1;
-        renderQuestionIndex();
+      editModalOverlay.classList.add("show");
+    }
+
+    function closeEditModal() {
+      editModalOverlay.classList.remove("show");
+      quizIdBeingEdited = null;
+      editQuestionsBuilder.innerHTML = "";
+    }
+
+    editAddQuestionBtn.addEventListener("click", function () {
+      addQuestionBlock(editQuestionsBuilder, editIterator);
+      editIterator++;
+    });
+
+    bindRemoveQuestionHandler(editQuestionsBuilder);
+
+    cancelEditBtn.addEventListener("click", closeEditModal);
+
+    editModalOverlay.addEventListener("click", function (e) {
+      if (e.target === editModalOverlay) closeEditModal();
+    });
+
+    editQuizForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const meta = validateQuizMeta(
+        document.getElementById("editQuizTitle"),
+        document.getElementById("editQuizTime"),
+      );
+
+      if (!meta) return;
+
+      const questions = editGetQuestionsData();
+
+      if (questions === null) return;
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch("api/teacher/updateQuiz", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          quizId: quizIdBeingEdited,
+          quizTitle: meta.quizTitle,
+          quizTime: meta.quizTime,
+          questions,
+        }),
       });
+
+      const backendData = await response.json();
+
+      if (!response.ok) {
+        showToast(backendData.message, true);
+        return;
+      }
+
+      showToast(backendData.message);
+      closeEditModal();
+      table.innerHTML = "";
+      renderExistingQuestions();
+    });
+
+    function editGetQuestionsData() {
+      return getQuestionsData(editQuestionsBuilder);
+    }
   </script>
 </html>
