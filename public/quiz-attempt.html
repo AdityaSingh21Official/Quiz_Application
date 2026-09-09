@@ -1,105 +1,607 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cell Biology — Unit 3 · Quiz App</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cell Biology — Unit 3 · Quiz App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <script src="auth.check.js"></script>
+  <body>
+    <div class="attempt-shell">
+      <header class="attempt-topbar">
+        <div class="quiz-name-block">
+          <span class="eyebrow">In progress</span>
+          <h2 id="quizTitleHeading">Loading . . .</h2>
+        </div>
 
-<div class="attempt-shell">
+        <div class="timer-widget">
+          <span class="timer-label">Time left</span>
+          <div id="timerRing">
+            <svg viewBox="0 0 64 64">
+              <circle class="timer-track" cx="32" cy="32" r="28"></circle>
+              <circle id="timerProgressCircle" cx="32" cy="32" r="28"></circle>
+            </svg>
+            <span id="timerText">14:52</span>
+          </div>
+        </div>
+      </header>
 
-  <!-- Shown by JS once the timer hits zero, before/while auto-submitting -->
-  <div id="autoSubmitBanner">Time's up — your answers are being submitted automatically.</div>
+      <div class="attempt-body">
+        <div class="attempt-progress">
+          <span
+            >Question <span id="currentQuestionNum">1</span> of
+            <span id="totalQuestionsNum">12</span></span
+          >
+          <span id="answeredCount">0 answered</span>
+        </div>
 
-  <header class="attempt-topbar">
-    <div class="quiz-name-block">
-      <span class="eyebrow">In progress</span>
-      <h2 id="quizTitleHeading">Cell Biology — Unit 3</h2>
-    </div>
+        <!-- Jump-to-question dots -->
+        <div id="questionNavDots" class="question-dots"></div>
 
-    <div class="timer-widget">
-      <span class="timer-label">Time left</span>
-      <div id="timerRing">
-        <svg viewBox="0 0 64 64">
-          <circle class="timer-track" cx="32" cy="32" r="28"></circle>
-          <circle id="timerProgressCircle" cx="32" cy="32" r="28"></circle>
-        </svg>
-        <span id="timerText">14:52</span>
+        <div id="questionCard" class="card"></div>
+
+        <div class="attempt-footer">
+          <button
+            type="button"
+            id="prevQuestionBtn"
+            class="btn btn-outline"
+            disabled
+          >
+            ← Previous
+          </button>
+          <div class="footer-right">
+            <button type="button" id="nextQuestionBtn" class="btn btn-primary">
+              Next →
+            </button>
+            <button type="button" id="submitQuizBtn" class="btn btn-gold">
+              Submit quiz
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirm-submit modal -->
+      <div id="submitConfirmModal" class="modal-overlay">
+        <div class="modal-box">
+          <h3 id="submitHeading">Submit your answers?</h3>
+          <p id="submitConfirmMessage">
+            You've answered 9 of 12 questions. You can't change your answers
+            after submitting.
+          </p>
+          <div class="modal-actions">
+            <button type="button" id="cancelSubmitBtn" class="btn btn-outline">
+              Keep going
+            </button>
+            <button type="button" id="confirmSubmitBtn" class="btn btn-gold">
+              Submit now
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="startQuizModal" class="modal-overlay">
+        <div class="modal-box">
+          <h3 id="submitHeading">Start Your Quiz ?</h3>
+          <div style="text-align: left">
+            <p>
+              1 . Closing the browser window will automatically submit the quiz.
+            </p>
+
+            <p>
+              2 . Clicking outside the quiz window will automatically submit the
+              quiz.
+            </p>
+
+            <p>
+              3 . The quiz will be automatically submitted when the allotted
+              time expires.
+            </p>
+
+            <p>
+              4 . You may revisit and review questions at any time before
+              submission.
+            </p>
+
+            <p>
+              5 . Once the quiz is submitted, no further changes can be made.
+            </p>
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="startBtn" class="btn btn-gold">
+              Start Quiz
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="cheatModal" class="modal-overlay">
+        <div class="modal-box">
+          <h3 id="submitHeading">WARNING</h3>
+          <div>
+            <p>Return to the fullscreen Window</p>
+            <p>Otherwise the quiz will auto submit in</p>
+            <h4 id="cheatSeconds"></h4>
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="cheatBackBtn" class="btn btn-gold">
+              I'm Back
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-  </header>
+    <div id="notification" class="notification"></div>
+  </body>
+  <script>
+    const params = new URLSearchParams(window.location.search);
 
-  <div class="attempt-body">
+    const attemptToken = params.get("attempt");
+    if (!attemptToken || attemptToken.length !== 36) {
+      window.close();
+    }
 
-    <div class="attempt-progress">
-      <span>Question <span id="currentQuestionNum">1</span> of <span id="totalQuestionsNum">12</span></span>
-      <span id="answeredCount">4 answered</span>
-    </div>
+    const quizTitleHeading = document.getElementById("quizTitleHeading");
+    const timerText = document.getElementById("timerText");
+    const questionNavDots = document.getElementById("questionNavDots");
+    const questionCard = document.getElementById("questionCard");
+    const questionText = document.getElementById("questionText");
+    const nextQuestionBtn = document.getElementById("nextQuestionBtn");
+    const prevQuestionBtn = document.getElementById("prevQuestionBtn");
+    const answeredCount = document.getElementById("answeredCount");
+    const startQuizModal = document.getElementById("startQuizModal");
+    const startBtn = document.getElementById("startBtn");
+    const cheatModal = document.getElementById("cheatModal");
+    const cheatBackBtn = document.getElementById("cheatBackBtn");
+    const browser = document.documentElement;
+    document.addEventListener("DOMContentLoaded", function () {
+      startQuizModal.classList.add("show");
+    });
 
-    <!-- Jump-to-question dots -->
-    <div id="questionNavDots" class="question-dots">
-      <button type="button" class="question-dot current" data-question-index="1">1</button>
-      <button type="button" class="question-dot answered" data-question-index="2">2</button>
-      <button type="button" class="question-dot answered" data-question-index="3">3</button>
-      <button type="button" class="question-dot" data-question-index="4">4</button>
-      <button type="button" class="question-dot" data-question-index="5">5</button>
-      <button type="button" class="question-dot" data-question-index="6">6</button>
-      <button type="button" class="question-dot" data-question-index="7">7</button>
-      <button type="button" class="question-dot" data-question-index="8">8</button>
-      <button type="button" class="question-dot" data-question-index="9">9</button>
-      <button type="button" class="question-dot" data-question-index="10">10</button>
-      <button type="button" class="question-dot" data-question-index="11">11</button>
-      <button type="button" class="question-dot" data-question-index="12">12</button>
-    </div>
+    startBtn.addEventListener("click", function () {
+      renderQuiz();
+      browser.requestFullscreen();
+      startTimer(quizTime * 60);
+      startQuizModal.classList.remove("show");
 
-    <div id="questionCard" class="card">
-      <p id="questionText">Which organelle is primarily responsible for producing ATP through cellular respiration?</p>
+      setTimeout(() => {
+        isQuizStarted = true;
+      }, 500);
+    });
+
+    let cheatTimeout;
+    let isReturned;
+
+    document.addEventListener("fullscreenchange", function () {
+      if (!isQuizStarted) return;
+      if (!document.fullscreenElement) {
+        if (cheatTimeout) return;
+        startCheatCountdown();
+        showToast(
+          "You Have 10 seconds to return to the browser or your quiz will be submitted",
+          true,
+        );
+        cheatTimeout = setTimeout(() => {
+          cheatModal.classList.remove("show");
+          forceSubmit("Voilation of Quiz Instructions", "Penelty Applied");
+        }, 10000);
+      } else {
+        if (cheatTimeout) {
+          clearTimeout(cheatTimeout);
+          cheatTimeout = null;
+          cheatModal.classList.remove("show");
+        }
+      }
+    });
+
+    document.addEventListener("mouseleave", function () {
+      if (!isQuizStarted) return;
+      if (cheatTimeout) return;
+      cheatModal.classList.add("show");
+      startCheatCountdown();
+      showToast(
+        "You Have 10 seconds to return to the browser or your quiz will be submitted",
+        true,
+      );
+      cheatTimeout = setTimeout(() => {
+        cheatModal.classList.remove("show");
+        forceSubmit("Voilation of Quiz Instructions", "Penelty Applied");
+      }, 10000);
+    });
+
+    cheatBackBtn.addEventListener("click", function () {
+      clearTimeout(cheatTimeout);
+      cheatTimeout = null;
+      browser.requestFullscreen().catch(() => {});
+      isReturned = true;
+      showToast("User Returned . Aborting Auto Submit. . .");
+      cheatModal.classList.remove("show");
+    });
+
+    function startCheatCountdown() {
+      const secondsEl = document.getElementById("cheatSeconds");
+      if (window.cheatCountdownInterval)
+        clearInterval(window.cheatCountdownInterval);
+      let s = 10;
+      secondsEl.textContent = s;
+      window.cheatCountdownInterval = setInterval(() => {
+        s--;
+        secondsEl.textContent = s;
+        if (s <= 0) clearInterval(window.cheatCountdownInterval);
+      }, 1000);
+    }
+
+    window.addEventListener("beforeunload", function (e) {
+      if (!isQuizStarted) return;
+      e.preventDefault();
+      fetch(`/api/student/submitQuiz/${attemptToken}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          data: answerkey,
+        }),
+        keepalive: true,
+      });
+    });
+
+    let questions;
+    let prev;
+    let answerkey = {};
+    let quizTime;
+    let isQuizStarted = false;
+    async function renderQuiz() {
+      const response = await fetch(`/api/student/startquiz/${attemptToken}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const data = await response.json();
+
+      const quizId = data.primary.quizId;
+      const quizTitle = data.primary.quizTitle;
+      quizTime = data.primary.quizTime;
+
+      quizTitleHeading.textContent = quizTitle;
+      timerText.textContent = quizTime;
+
+      questions = data.secondary;
+      const totalQuestions = questions.length;
+      for (let i = 0; i < totalQuestions; i++) {
+        const butt = document.createElement("button");
+        butt.classList.add("question-dot");
+        butt.id = questions[i].questionId;
+        butt.textContent = `${i + 1}`;
+        answerkey[questions[i].questionId] = -1;
+        questionNavDots.appendChild(butt);
+      }
+
+      prev = questionNavDots.firstElementChild;
+
+      prev.classList.add("current");
+      renderThisQuestion(0);
+    }
+
+    function showToast(message, isError = false) {
+      notification.textContent = message;
+      notification.classList.toggle("error", isError);
+      notification.classList.add("show");
+      setTimeout(() => notification.classList.remove("show"), 3000);
+    }
+
+    function renderAnsweredCount() {
+      let totalAnswersSaved = 0;
+      for (const key in answerkey) {
+        if (answerkey[key] !== -1) {
+          totalAnswersSaved++;
+        }
+      }
+      answeredCount.textContent = `${totalAnswersSaved} answered`;
+      return totalAnswersSaved;
+    }
+
+    questionNavDots.addEventListener("click", function (e) {
+      if (e.target.tagName !== "BUTTON") {
+        return;
+      }
+      if (answerkey[prev.id] !== -1 && !prev.classList.contains("answered")) {
+        prev.classList.add("answered");
+      }
+      prev.classList.remove("current");
+      prev = e.target;
+      e.target.classList.add("current");
+      const i = Number(e.target.textContent) - 1;
+      renderThisQuestion(i);
+      if (Number(prev.textContent) === questions.length)
+        nextQuestionBtn.disabled = true;
+      else nextQuestionBtn.disabled = false;
+      if (Number(prev.textContent) === 1) prevQuestionBtn.disabled = true;
+      else prevQuestionBtn.disabled = false;
+
+      renderAnsweredCount();
+    });
+
+    prevQuestionBtn.addEventListener("click", function () {
+      const previousElement = prev.previousElementSibling;
+      if (previousElement && previousElement.tagName === "BUTTON") {
+        previousElement.click();
+      }
+    });
+
+    nextQuestionBtn.addEventListener("click", function () {
+      const nextElement = prev.nextElementSibling;
+
+      if (nextElement && nextElement.tagName === "BUTTON") {
+        nextElement.click();
+      }
+    });
+
+    questionCard.addEventListener("click", function (e) {
+      const currBtn = e.target.closest(".option-btn");
+      if (!currBtn) return;
+      const optionsContainer = document.getElementById("optionsContainer");
+
+      let thisQuestionId = currBtn.parentElement.previousElementSibling.id;
+      if (answerkey[thisQuestionId] === -1) {
+        currBtn.classList.add("selected");
+        answerkey[thisQuestionId] = currBtn.id;
+      } else {
+        const oldOptionElement = optionsContainer.querySelector(
+          `#${CSS.escape(answerkey[thisQuestionId])}`,
+        );
+
+        oldOptionElement.classList.remove("selected");
+        currBtn.classList.add("selected");
+        answerkey[thisQuestionId] = currBtn.id;
+      }
+    });
+
+    function renderThisQuestion(i) {
+      questionCard.innerHTML = `
+  <p id=${questions[i].questionId}>
+        ${questions[i].questionText}
+      </p>
 
       <div id="optionsContainer">
-        <button type="button" class="option-btn selected" data-option-index="1">
+        <button
+          type="button"
+          class="option-btn"
+          id = "${questions[i].options[0].optionId}"
+          data-option-index="1"
+        >
           <span class="option-marker">A</span>
-          <span class="option-label-text">Mitochondrion</span>
+          <span class="option-label-text"
+          >${questions[i].options[0].optionText}</span>
         </button>
-        <button type="button" class="option-btn" data-option-index="2">
+        <button type="button"
+        class="option-btn"
+        id = "${questions[i].options[1].optionId}"
+        data-option-index="2">
           <span class="option-marker">B</span>
-          <span class="option-label-text">Golgi apparatus</span>
+          <span class="option-label-text"
+          >${questions[i].options[1].optionText}</span>
         </button>
-        <button type="button" class="option-btn" data-option-index="3">
+        <button type="button"
+        class="option-btn"
+        id = "${questions[i].options[2].optionId}"
+        data-option-index="3">
           <span class="option-marker">C</span>
-          <span class="option-label-text">Ribosome</span>
+          <span class="option-label-text"
+          >${questions[i].options[2].optionText}</span>
         </button>
-        <button type="button" class="option-btn" data-option-index="4">
+        <button type="button"
+        class="option-btn"
+        id = "${questions[i].options[3].optionId}"
+        data-option-index="4">
           <span class="option-marker">D</span>
-          <span class="option-label-text">Lysosome</span>
+          <span class="option-label-text"
+          >${questions[i].options[3].optionText}</span>
         </button>
       </div>
-    </div>
+  `;
 
-    <div class="attempt-footer">
-      <button type="button" id="prevQuestionBtn" class="btn btn-outline" disabled>← Previous</button>
-      <div class="footer-right">
-        <button type="button" id="nextQuestionBtn" class="btn btn-primary">Next →</button>
-        <button type="button" id="submitQuizBtn" class="btn btn-gold">Submit quiz</button>
-      </div>
-    </div>
+      if (answerkey[questions[i].questionId] !== -1) {
+        const selected = document
+          .getElementById("optionsContainer")
+          .querySelector(`#${CSS.escape(answerkey[questions[i].questionId])}`);
+        selected.classList.add("selected");
+      }
+    }
 
-  </div>
+    function startTimer(durationInput) {
+      let totalSeconds = 0;
 
-  <!-- Confirm-submit modal -->
-  <div id="submitConfirmModal" class="modal-overlay">
-    <div class="modal-box">
-      <h3>Submit your answers?</h3>
-      <p id="submitConfirmMessage">You've answered 9 of 12 questions. You can't change your answers after submitting.</p>
-      <div class="modal-actions">
-        <button type="button" id="cancelSubmitBtn" class="btn btn-outline">Keep going</button>
-        <button type="button" id="confirmSubmitBtn" class="btn btn-gold">Submit now</button>
-      </div>
-    </div>
-  </div>
+      if (
+        !durationInput ||
+        durationInput === "undefined" ||
+        durationInput === "null"
+      ) {
+        console.error(
+          "Backend quizTime is missing! Falling back to 15 minutes.",
+        );
+        durationInput = 900;
+      }
 
-</div>
+      if (typeof durationInput === "string" && durationInput.includes(":")) {
+        const parts = durationInput.split(":");
+        totalSeconds =
+          (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+      } else {
+        totalSeconds = parseInt(durationInput, 10) || 900;
+      }
 
-</body>
+      let timeRemaining = totalSeconds;
+      let toastTriggered = false;
+
+      const timerText = document.getElementById("timerText");
+      const progressCircle = document.getElementById("timerProgressCircle");
+
+      if (!timerText || !progressCircle) return;
+
+      const RADIUS = 28;
+      const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+      progressCircle.style.strokeDasharray = CIRCUMFERENCE;
+      progressCircle.style.strokeDashoffset = 0;
+
+      if (window.timerInterval) {
+        clearInterval(window.timerInterval);
+      }
+
+      function updateTimer() {
+        if (timeRemaining <= 0) {
+          clearInterval(window.timerInterval);
+          window.timerInterval = null;
+          timerText.innerText = "00:00";
+          progressCircle.style.strokeDashoffset = CIRCUMFERENCE;
+          forceSubmit("Time's Up", "Quiz Time is Over");
+          return;
+        }
+
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        timerText.innerText = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+        const fraction = timeRemaining / totalSeconds;
+        progressCircle.style.strokeDashoffset =
+          CIRCUMFERENCE - fraction * CIRCUMFERENCE;
+
+        if (fraction <= 0.25) {
+          progressCircle.style.stroke = "#ff4d4d";
+          timerText.style.color = "#ff4d4d";
+        }
+
+        const twentyFivePercentMark = Math.round(0.25 * totalSeconds);
+        if (timeRemaining <= twentyFivePercentMark && !toastTriggered) {
+          showToast(
+            `Last ${timeRemaining} Seconds Remaining, Quiz Will be auto Submitted after time`,
+            true,
+          );
+          toastTriggered = true;
+        }
+
+        timeRemaining--;
+      }
+
+      updateTimer();
+      window.timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    const submitConfirmModal = document.getElementById("submitConfirmModal");
+    const cancelSubmitBtn = document.getElementById("cancelSubmitBtn");
+    const confirmSubmitBtn = document.getElementById("confirmSubmitBtn");
+    const submitConfirmMessage = document.getElementById(
+      "submitConfirmMessage",
+    );
+    const submitHeading = document.getElementById("submitHeading");
+
+    async function forceSubmit(reason, reasonMessage) {
+      if (window.timerInterval) {
+        clearInterval(window.timerInterval);
+        window.timerInterval = null;
+      }
+
+      cancelSubmitBtn.remove();
+      confirmSubmitBtn.remove();
+
+      isQuizStarted = false;
+
+      submitHeading.textContent = `${reason}`;
+
+      if (!submitConfirmModal.classList.contains("show")) {
+        submitConfirmModal.classList.add("show");
+      }
+
+      submitConfirmMessage.innerHTML = `<p>${reasonMessage}</p>
+  <p> Your answers has been auto submitted </p>
+  <p> Check your myquiz-result page for results </p>`;
+
+      const submit = await fetch(`/api/student/submitQuiz/${attemptToken}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          data: answerkey,
+        }),
+      });
+
+      const response = await submit.json();
+
+      if (!submit.ok) {
+        showToast(response.message, true);
+        return;
+      }
+
+      setTimeout(() => {
+        afterSubmission();
+      }, 5000);
+    }
+
+    document
+      .getElementById("submitQuizBtn")
+      .addEventListener("click", function () {
+        submitConfirmModal.classList.add("show");
+        const attempted = renderAnsweredCount();
+        submitConfirmMessage.textContent = `You have attempted ${attempted} out of ${questions.length}`;
+      });
+
+    cancelSubmitBtn.addEventListener("click", function () {
+      submitConfirmModal.classList.remove("show");
+    });
+
+    confirmSubmitBtn.addEventListener("click", async function () {
+      if (window.timerInterval) {
+        clearInterval(window.timerInterval);
+        window.timerInterval = null;
+      }
+
+      const submit = await fetch(`/api/student/submitQuiz/${attemptToken}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          data: answerkey,
+        }),
+      });
+
+      const response = await submit.json();
+
+      if (!submit.ok) {
+        showToast(response.message, true);
+        return;
+      }
+
+      console.log(response.message);
+
+      afterSubmission();
+    });
+
+    function afterSubmission() {
+      isQuizStarted = false;
+
+      if (!submitConfirmModal.classList.contains("show")) {
+        submitConfirmModal.classList.add("show");
+      }
+
+      if (cancelSubmitBtn && cancelSubmitBtn.parentNode) {
+        cancelSubmitBtn.remove();
+      }
+      if (confirmSubmitBtn && confirmSubmitBtn.parentNode) {
+        confirmSubmitBtn.remove();
+      }
+
+      submitHeading.textContent = "Quiz Submitted";
+      submitConfirmMessage.innerHTML = ` <p> Check you results on your Quiz-Results Page</p>`;
+
+      setTimeout(() => {
+        window.close();
+      }, 5000);
+    }
+  </script>
 </html>

@@ -1,16 +1,19 @@
 import express from "express";
 import { authorise } from "../middlewares/authorization.middleware.js";
 import {
+  myCredentials,
   createQuiz,
   getMyQuizes,
   deleteQuiz,
   getThisQuiz,
   updateQuiz,
-} from "../controllers/teacher.controllers.js";
+} from "../controllers/teacher.controller.js";
 import { isTeacher } from "../middlewares/teacherRoleRequired.middleware.js";
 import { validateQuestions } from "../middlewares/validateQuestions.middleware.js";
 
 const teacher = express.Router();
+
+teacher.get("/teacher/credentials", authorise, isTeacher, myCredentials);
 
 teacher.post(
   "/teacher/createQuiz",

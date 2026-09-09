@@ -12,7 +12,10 @@
       <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-brand">
-          <span class="brand-mark">QA</span> Quiz App
+          <span class="brand-mark">
+            <img src="/assets/logo.png" alt="QA" />
+          </span>
+          Quiz App
         </div>
         <nav class="sidebar-nav">
           <a href="teacher-dashboard.html" id="navQuestions" class="active"
@@ -21,10 +24,10 @@
           <a href="teacher-results.html" id="navResults">Student results</a>
         </nav>
         <div class="sidebar-footer">
-          <div class="sidebar-user-avatar">RT</div>
+          <div class="sidebar-user-avatar" id="userAvatar"></div>
           <div class="sidebar-user-meta">
-            <div id="teacherName">Rita Mehta</div>
-            <div class="role-tag">Teacher</div>
+            <div id="teacherName"></div>
+            <div class="role-tag" id="roleName">Teacher</div>
           </div>
           <button id="logoutBtn">Log out</button>
         </div>
@@ -259,6 +262,28 @@
       </main>
     </div>
     <div id="notification" class="notification"></div>
+    <div id="logoutModalOverlay" class="modal-overlay">
+      <div class="modal-box">
+        <h3>Confirm Logout</h3>
+        <p></p>
+        <div class="modal-actions">
+          <button
+            type="button"
+            id="cancelLogoutBtn"
+            class="btn btn-ghost btn-sm"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="confirmLogoutBtn"
+            class="btn btn-danger-ghost btn-sm"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
     <div id="deleteModalOverlay" class="modal-overlay">
       <div class="modal-box">
         <h3>Confirm Deletion</h3>
@@ -357,6 +382,12 @@
     </div>
   </body>
   <script>
+    const teacherName = document.getElementById("teacherName");
+    const roleName = document.getElementById("roleName");
+    const defaultUserAvatar = document.getElementById("userAvatar");
+
+    const logoutModalOverlay = document.getElementById("logoutModalOverlay");
+
     const table = document.getElementById("quizListBody");
     const notification = document.getElementById("notification");
 
@@ -385,7 +416,52 @@
     let editIterator = 1;
     let quizIdBeingEdited = null;
 
-    document.addEventListener("DOMContentLoaded", renderExistingQuestions);
+    document.addEventListener("DOMContentLoaded", function () {
+      renderExistingQuestions();
+      loadName();
+    });
+
+    async function loadName() {
+      const token = localStorage.getItem("token");
+      const response = await fetch("api/teacher/credentials", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        teacherName.textContent = "Loading . . .";
+        roleName.textContent = "";
+        userAvatar.textContent = "T";
+        return;
+      }
+
+      teacherName.textContent = data["name"];
+      roleName.textContent = data["role"];
+
+      defaultUserAvatar.textContent = data["name"].split(" ")[0][0];
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", function () {
+      logoutModalOverlay.classList.add("show");
+    });
+
+    logoutModalOverlay.addEventListener("click", function (e) {
+      if (e.target.id === "cancelLogoutBtn") {
+        logoutModalOverlay.classList.remove("show");
+        return;
+      }
+      if (e.target.id === "confirmLogoutBtn") {
+        localStorage.removeItem("token");
+        window.location.href = "index.html";
+        return;
+      }
+
+      return;
+    });
 
     function showToast(message, isError = false) {
       notification.textContent = message;
@@ -396,56 +472,56 @@
 
     function questionBlockTemplate(radioGroupName) {
       return `
-<div class="question-block" data-question-index="0">
-  <div class="question-block-header">
-    <span class="question-index">Question</span>
-    <button type="button" class="remove-question-btn">Remove</button>
-  </div>
-  <div class="field">
-    <label>Question text</label>
-    <input class="input question-text-input" type="text" placeholder="Type the question…" required />
-  </div>
-  <div class="field" style="margin-bottom: 6px">
-    <label>Options — mark the correct one</label>
+    <div class="question-block" data-question-index="0">
+      <div class="question-block-header">
+        <span class="question-index">Question</span>
+        <button type="button" class="remove-question-btn">Remove</button>
+      </div>
+      <div class="field">
+        <label>Question text</label>
+        <input class="input question-text-input" type="text" placeholder="Type the question…" required />
+      </div>
+      <div class="field" style="margin-bottom: 6px">
+        <label>Options — mark the correct one</label>
 
-    <div class="option-row">
-      <span class="option-letter">A</span>
-      <input class="input option-input" type="text" placeholder="Option A" required />
-      <label class="correct-label">
-        <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="1" required />
-        Correct
-      </label>
-    </div>
+        <div class="option-row">
+          <span class="option-letter">A</span>
+          <input class="input option-input" type="text" placeholder="Option A" required />
+          <label class="correct-label">
+            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="1" required />
+            Correct
+          </label>
+        </div>
 
-    <div class="option-row">
-      <span class="option-letter">B</span>
-      <input class="input option-input" type="text" placeholder="Option B" required />
-      <label class="correct-label">
-        <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="2" />
-        Correct
-      </label>
-    </div>
+        <div class="option-row">
+          <span class="option-letter">B</span>
+          <input class="input option-input" type="text" placeholder="Option B" required />
+          <label class="correct-label">
+            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="2" />
+            Correct
+          </label>
+        </div>
 
-    <div class="option-row">
-      <span class="option-letter">C</span>
-      <input class="input option-input" type="text" placeholder="Option C " />
-      <label class="correct-label">
-        <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="3" />
-        Correct
-      </label>
-    </div>
+        <div class="option-row">
+          <span class="option-letter">C</span>
+          <input class="input option-input" type="text" placeholder="Option C " />
+          <label class="correct-label">
+            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="3" />
+            Correct
+          </label>
+        </div>
 
-    <div class="option-row">
-      <span class="option-letter">D</span>
-      <input class="input option-input" type="text" placeholder="Option D " />
-      <label class="correct-label">
-        <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="4" />
-        Correct
-      </label>
+        <div class="option-row">
+          <span class="option-letter">D</span>
+          <input class="input option-input" type="text" placeholder="Option D " />
+          <label class="correct-label">
+            <input class="correct-radio" type="radio" name="correct-option-${radioGroupName}" value="4" />
+            Correct
+          </label>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-`;
+    `;
     }
 
     function renderQuestionIndex(container) {
@@ -576,13 +652,13 @@
         const created = data.data[i][4].split("T")[0];
 
         temp.innerHTML = `<td class="quizTitleText">${data.data[i][1]}</td>
-      <td class="quizQuestionCount">${data.data[i][2]}</td>
-      <td class="quizTimeText">${data.data[i][3]}</td>
-      <td class="quizCreatedDate">${created}</td>
-      <td>
-        <button type="button" class="btn btn-ghost btn-sm editQuizBtn">Edit</button>
-        <button type="button" class="btn btn-danger-ghost btn-sm deleteQuizBtn">Delete</button>
-      </td>`;
+          <td class="quizQuestionCount">${data.data[i][2]}</td>
+          <td class="quizTimeText">${data.data[i][3]}</td>
+          <td class="quizCreatedDate">${created}</td>
+          <td>
+            <button type="button" class="btn btn-ghost btn-sm editQuizBtn">Edit</button>
+            <button type="button" class="btn btn-danger-ghost btn-sm deleteQuizBtn">Delete</button>
+          </td>`;
 
         table.appendChild(temp);
       }

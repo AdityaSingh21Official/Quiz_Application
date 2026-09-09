@@ -33,12 +33,195 @@
           <div>
             <span class="eyebrow">Roll call</span>
             <h1>Your quizzes</h1>
+            <div id="loading-placeholder" class="eyebrow">
+              <h2>Loading . . .</h2>
+            </div>
           </div>
         </div>
 
-        <div id="quizGrid" class="quiz-grid">
-          <!-- Not attempted -->
-          <div class="quiz-card" data-quiz-id="1">
+        <div id="quizGrid" class="quiz-grid"></div>
+      </main>
+    </div>
+    <div id="notification" class="notification"></div>
+    <div id="confirmStartModalOverlay" class="modal-overlay">
+      <div class="modal-box start-quiz-modal">
+        <h3>Quiz Instructions</h3>
+        <div style="text-align: left">
+          <p>
+            1 . Closing the browser window will automatically submit the quiz.
+          </p>
+
+          <p>
+            2 . Clicking outside the quiz window will automatically submit the
+            quiz.
+          </p>
+
+          <p>
+            3 . The quiz will be automatically submitted when the allotted time
+            expires.
+          </p>
+
+          <p>
+            4 . You may revisit and review questions at any time before
+            submission.
+          </p>
+
+          <p>5 . Once the quiz is submitted, no further changes can be made.</p>
+        </div>
+        <div style="padding-top: 12px">
+          <input type="checkbox" name="" id="quizAcceptBox" />
+          I have read and understood the quiz instructions and agree to abide by
+          the rules stated above.
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="cancelQuizBtn" class="btn btn-ghost btn-sm">
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="confirmQuizBtn"
+            class="btn btn-danger-ghost btn-sm"
+          >
+            Start Attepmt
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    const loadingPlaceholder = document.getElementById("loading-placeholder");
+    const confirmStartOverlay = document.getElementById(
+      "confirmStartModalOverlay",
+    );
+    const quizGrid = document.getElementById("quizGrid");
+    document.addEventListener("DOMContentLoaded", function () {
+      renderExistingQuestions();
+    });
+
+    async function renderExistingQuestions() {
+      loadingPlaceholder.classList.add("hidden");
+      const token = localStorage.getItem("token");
+      const response = await fetch("api/student/getquizes", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      let data = await response.json();
+
+      if (!response.ok) {
+        loadingPlaceholder.classList.remove("hidden");
+        loadingPlaceholder.textContent = data.message;
+        showToast(data.message, true);
+        return;
+      }
+      const quizes = data.data;
+      const total = quizes.length;
+
+      for (let i = 0; i < total; i++) {
+        let div = document.createElement("div");
+        div.id = quizes[i].quizId;
+        div.classList.add("quiz-card");
+
+        div.innerHTML = `
+        <div class="quiz-card-top">
+              <span class="quiz-card-subject">${quizes[i].subject}</span>
+              <h3 class="quiz-card-title">${quizes[i].quizTitle}</h3>
+            </div>
+            <div class="quiz-card-bottom">
+              <div class="quiz-card-meta">
+                <span class="quizCardQuestionCount">${quizes[i].quizQuestions} questions</span>
+                <span class="quizCardTimeLimit">${quizes[i].quizTime} min</span>
+              </div>
+              <div class="quiz-card-footer">
+                <span class="badge badge-pending quizCardStatusBadge"
+                  >Not attempted</span
+                >
+                <button
+                  type="button"
+                  class="btn btn-gold btn-sm startQuizBtn"
+                  id="${quizes[i].quizId}"
+                >
+                  Start quiz
+                </button>
+              </div>
+            </div>
+        `;
+        quizGrid.appendChild(div);
+      }
+
+      showToast(data.message);
+    }
+
+    function showToast(message, isError = false) {
+      notification.textContent = message;
+      notification.classList.toggle("error", isError);
+      notification.classList.add("show");
+      setTimeout(() => notification.classList.remove("show"), 3000);
+    }
+
+    let CurrQuizID;
+
+    quizGrid.addEventListener("click", function (e) {
+      if (e.target.tagName === "BUTTON") {
+        confirmStartOverlay.classList.add("show");
+        CurrQuizID = e.target.id;
+      }
+      return;
+    });
+
+    confirmStartOverlay.addEventListener("click", function (e) {
+      const startBtn = document.getElementById("confirmQuizBtn");
+      const quizAcceptBox = document.getElementById("quizAcceptBox");
+
+      if (e.target.id === "cancelQuizBtn") {
+        confirmStartOverlay.classList.remove("show");
+        CurrQuizID = -1;
+      }
+      if (e.target.id === "confirmQuizBtn") {
+        if (quizAcceptBox.checked) {
+          startAttempt(CurrQuizID);
+          quizAcceptBox.checked = false;
+          confirmStartOverlay.classList.remove("show");
+        } else {
+          showToast("Please Read and Accept the instructions First", true);
+        }
+      }
+    });
+
+    async function startAttempt(quizId) {
+      const response = await fetch("/api/student/generateAttempt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          quizId: quizId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showToast(data.message, true);
+        return;
+      }
+
+      const quizWindow = window.open(
+        `/quiz-attempt.html?attempt=${data.attemptToken}`,
+        "QuizWindow",
+        "width=1200,height=800,resizable=yes,scrollbars=yes",
+      );
+    }
+  </script>
+</html>
+
+<!-- STORAGE UNIT  -->
+
+<!-- Not attempted -->
+<!-- <div class="quiz-card" data-quiz-id="1">
             <div class="quiz-card-top">
               <span class="quiz-card-subject">Biology</span>
               <h3 class="quiz-card-title">Cell Biology — Unit 3</h3>
@@ -61,10 +244,10 @@
                 </button>
               </div>
             </div>
-          </div>
+          </div> -->
 
-          <!-- Completed -->
-          <div class="quiz-card" data-quiz-id="2">
+<!-- Completed -->
+<!-- <div class="quiz-card" data-quiz-id="2">
             <div class="quiz-card-top">
               <span class="quiz-card-subject">History</span>
               <h3 class="quiz-card-title">World War II — Timeline</h3>
@@ -88,10 +271,10 @@
                 </button>
               </div>
             </div>
-          </div>
+          </div> -->
 
-          <!-- Auto-submitted -->
-          <div class="quiz-card" data-quiz-id="3">
+<!-- Auto-submitted -->
+<!-- <div class="quiz-card" data-quiz-id="3">
             <div class="quiz-card-top">
               <span class="quiz-card-subject">Mathematics</span>
               <h3 class="quiz-card-title">Algebra — Quick Check</h3>
@@ -115,9 +298,6 @@
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  </body>
-</html>
+          </div> -->
+
+<!-- STORAGE UNIT  -->

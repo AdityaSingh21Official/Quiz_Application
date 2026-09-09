@@ -239,6 +239,12 @@ textarea {
   flex-shrink: 0;
 }
 
+.sidebar-brand .brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .sidebar-nav {
   flex: 1;
   display: flex;
@@ -848,7 +854,7 @@ tbody tr:hover {
   font-weight: bold;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   transition: top 0.4s ease; /* Smooth slide effect */
-  z-index: 1000; /* Keeps it above everything else */
+  z-index: 1001; /* Keeps it above everything else */
 }
 
 /* When this class is added via JavaScript, it slides down */
@@ -899,6 +905,11 @@ tbody tr:hover {
   text-align: center;
   animation: modalIn var(--t-slow) var(--ease-back);
   border: 1px solid var(--rule);
+}
+
+.start-quiz-modal {
+  width: 750px;
+  max-width: 90%;
 }
 
 @keyframes modalIn {
@@ -1034,75 +1045,29 @@ tbody tr:hover {
   overflow: hidden;
 }
 
-/* The booklet cover itself, rendered entirely from a pseudo-element:
-   a tilted rectangle with a printed cover and blank fields, like the
-   front of a real examination booklet. This is the page's signature. */
-.login-hero::before {
-  content: "Examination Booklet\A No. 7 — General Studies\A \A Name  ________________\A Date  ________________\A Room  ________________";
-  position: absolute;
-  right: 8%;
-  top: 52%;
-  transform: translateY(-50%) rotate(4deg);
-  width: 250px;
-  height: 330px;
-  background: var(--blue);
-  border-radius: 3px;
-  padding: 34px 26px;
-  box-sizing: border-box;
-  white-space: pre-line;
-  font-family: var(--f-mono);
-  font-size: 10.5px;
-  line-height: 2.15;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.92);
-  box-shadow:
-    5px 6px 0 0 #e6e1d2,
-    5px 6px 0 1.5px rgba(6, 10, 24, 0.4),
-    16px 22px 34px rgba(4, 7, 20, 0.5);
-  pointer-events: none;
-}
-
-/* A crooked "A+" grading stamp on the booklet's corner */
-.login-hero::after {
-  content: "A+";
-  position: absolute;
-  right: 10%;
-  top: 30%;
-  width: 62px;
-  height: 62px;
-  border: 2.5px solid var(--red-bright);
-  border-radius: var(--scribble);
-  transform: rotate(11deg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--f-hand);
-  font-weight: 700;
-  font-size: 24px;
-  color: var(--red-bright);
-  z-index: 1;
-  pointer-events: none;
-}
-
 .login-hero .brand-mark-lg {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--blue);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--f-mono);
-  font-weight: 700;
-  font-size: 16px;
-  color: #fff;
+  width: 580px;
+  height: auto;
+
+  margin-left: auto;
+  margin-right: 0;
   margin-bottom: 40px;
-  box-shadow:
-    inset 0 0 0 2px rgba(255, 255, 255, 0.18),
-    0 4px 16px rgba(22, 47, 143, 0.55);
+
+  display: block;
+
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+
   position: relative;
   z-index: 2;
+}
+
+.login-hero .brand-mark-lg img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .login-hero h1 {

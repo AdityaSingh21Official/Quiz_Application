@@ -1,5 +1,29 @@
 import { db } from "../database/db.config.js";
 
+async function myCredentials(req, res) {
+  try {
+    const userId = req.user.userId;
+    const role = req.user.role;
+
+    const [name] = await db.query("select aname from admin where aid = ?", [
+      userId,
+    ]);
+
+    return res.status(200).json({
+      name: name[0]["aname"],
+      role: role,
+    });
+  } catch (error) {
+    console.log(
+      "CONTROLLER ERROR : teacher.controller {myCredentials}" + error,
+    );
+
+    return res.status(200).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
 async function createQuiz(req, res) {
   let thisConn;
 
@@ -398,4 +422,11 @@ async function updateQuiz(req, res) {
   }
 }
 
-export { createQuiz, getMyQuizes, deleteQuiz, getThisQuiz, updateQuiz };
+export {
+  myCredentials,
+  createQuiz,
+  getMyQuizes,
+  deleteQuiz,
+  getThisQuiz,
+  updateQuiz,
+};
