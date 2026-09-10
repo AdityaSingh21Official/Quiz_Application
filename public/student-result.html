@@ -1,58 +1,351 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Result · Quiz App</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Results · Quiz App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <script src="./auth.check.js"></script>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <span class="brand-mark">QA</span> Quiz App
+        </div>
+        <nav class="sidebar-nav">
+          <a href="student-dashboard.html" id="navMyQuizzes" class=""
+            >My quizzes</a
+          >
+          <a href="student-dashboard.html" id="navMyQuizzes" class="active"
+            >Quiz Results</a
+          >
+        </nav>
+        <div class="sidebar-footer">
+          <div class="sidebar-user-avatar">AS</div>
+          <div class="sidebar-user-meta">
+            <span class="name" id="studentName">Aarav Shah</span>
+            <span class="role-tag">Student</span>
+          </div>
+          <button id="logoutBtnStudent">Log out</button>
+        </div>
+      </aside>
 
-<div class="result-shell">
-  <div class="card result-card">
+      <main class="main-area">
+        <div class="main-header">
+          <div>
+            <span class="eyebrow">Results</span>
+            <h2>Your quiz results</h2>
+          </div>
+          <button type="button" class="btn btn-primary" id="backToDashboardBtn">
+            Back to my quizzes
+          </button>
+        </div>
 
-    <span class="eyebrow">Cell Biology — Unit 3</span>
-    <h2 style="margin-bottom: 22px;">Quiz complete</h2>
+        <div class="summary-stats" id="summaryStats"></div>
 
-    <div class="score-ring">
-      <svg viewBox="0 0 140 140">
-        <circle class="track" cx="70" cy="70" r="55"></circle>
-        <circle id="scoreProgressCircle" cx="70" cy="70" r="55" stroke-dashoffset="86"></circle>
-      </svg>
-      <div class="score-ring-label">
-        <p id="scoreDisplay">9</p>
-        <p id="scoreOutOf">out of 12</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Quiz</th>
+                <th>Date</th>
+                <th>Score</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="quizTableBody"></tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal-overlay" id="quizModalOverlay">
+      <div class="modal-box modal-box-lg">
+        <span class="eyebrow" id="modalEyebrow">Cell Biology — Unit 3</span>
+        <h3 id="modalTitle">Quiz complete</h3>
+        <p id="modalResultStatusNote">Submitted with 2 minutes remaining.</p>
+
+        <div class="score-ring">
+          <svg viewBox="0 0 150 150">
+            <circle class="track" cx="75" cy="75" r="59"></circle>
+            <circle id="scoreProgressCircle" cx="75" cy="75" r="59"></circle>
+          </svg>
+          <div class="score-ring-label">
+            <p id="scoreDisplay">9</p>
+            <p id="scoreOutOf">out of 12</p>
+          </div>
+        </div>
+
+        <div id="answerReview" class="review-list"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="modalCloseBtn">
+            Close
+          </button>
+        </div>
       </div>
     </div>
 
-    <p id="resultStatusNote">Submitted with 2 minutes remaining.</p>
+    <script>
+      const quizzes = [
+        {
+          title: "Cell Biology — Unit 3",
+          date: "Sep 8, 2026",
+          note: "Submitted with 2 minutes remaining.",
+          score: 9,
+          total: 12,
+          questions: [
+            {
+              question:
+                "1. Which organelle is primarily responsible for producing ATP?",
+              yourAnswer: "Mitochondrion",
+              correctAnswer: "Mitochondrion",
+              correct: true,
+            },
+            {
+              question: "2. What is the powerhouse's outer structure called?",
+              yourAnswer: "Cristae",
+              correctAnswer: "Double membrane",
+              correct: false,
+            },
+            {
+              question: "3. Where does the Krebs cycle take place?",
+              yourAnswer: "Mitochondrial matrix",
+              correctAnswer: "Mitochondrial matrix",
+              correct: true,
+            },
+          ],
+        },
+        {
+          title: "Genetics — Unit 1",
+          date: "Sep 5, 2026",
+          note: "Submitted with 4 minutes remaining.",
+          score: 6,
+          total: 10,
+          questions: [
+            {
+              question: "1. What is a heterozygous genotype?",
+              yourAnswer: "Two different alleles",
+              correctAnswer: "Two different alleles",
+              correct: true,
+            },
+            {
+              question: "2. Which base pairs with adenine in DNA?",
+              yourAnswer: "Guanine",
+              correctAnswer: "Thymine",
+              correct: false,
+            },
+            {
+              question: "3. What is the term for a gene's alternate forms?",
+              yourAnswer: "Alleles",
+              correctAnswer: "Alleles",
+              correct: true,
+            },
+          ],
+        },
+        {
+          title: "Plant Physiology — Unit 2",
+          date: "Aug 29, 2026",
+          note: "Submitted with 0 minutes remaining.",
+          score: 11,
+          total: 12,
+          questions: [
+            {
+              question: "1. Where does photosynthesis primarily occur?",
+              yourAnswer: "Chloroplast",
+              correctAnswer: "Chloroplast",
+              correct: true,
+            },
+            {
+              question: "2. What pigment absorbs light energy?",
+              yourAnswer: "Chlorophyll",
+              correctAnswer: "Chlorophyll",
+              correct: true,
+            },
+            {
+              question: "3. What gas is released during photosynthesis?",
+              yourAnswer: "Carbon dioxide",
+              correctAnswer: "Oxygen",
+              correct: false,
+            },
+          ],
+        },
+      ];
 
-    <div id="answerReview" class="review-list">
+      quizzes.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      <div class="review-item correct">
-        <p class="review-question">1. Which organelle is primarily responsible for producing ATP?</p>
-        <div class="review-answer-row">
-          <span class="review-status-icon">✓</span>
-          <span class="reviewYourAnswer">Your answer: Mitochondrion</span>
-        </div>
-      </div>
+      const circleCircumference = 370;
+      const quizTableBody = document.getElementById("quizTableBody");
+      const summaryStats = document.getElementById("summaryStats");
+      const quizModalOverlay = document.getElementById("quizModalOverlay");
+      const modalCloseBtn = document.getElementById("modalCloseBtn");
+      let lastFocusedRow = null;
 
-      <div class="review-item incorrect">
-        <p class="review-question">2. What is the powerhouse's outer structure called?</p>
-        <div class="review-answer-row">
-          <span class="review-status-icon">✕</span>
-          <span class="reviewYourAnswer">Your answer: Cristae</span>
-        </div>
-        <div class="review-answer-row">
-          <span class="reviewCorrectAnswer">Correct answer: Double membrane</span>
-        </div>
-      </div>
+      function renderStats() {
+        if (quizzes.length === 0) {
+          summaryStats.innerHTML = "";
+          return;
+        }
 
-    </div>
+        const percentages = quizzes.map((q) =>
+          Math.round((q.score / q.total) * 100),
+        );
+        const average = Math.round(
+          percentages.reduce((a, b) => a + b, 0) / percentages.length,
+        );
+        const best = Math.max(...percentages);
 
-    <button type="button" id="backToDashboardBtn" class="btn btn-primary btn-block" style="margin-top: 28px;">Back to my quizzes</button>
-  </div>
-</div>
+        summaryStats.innerHTML = `
+          <div class="stat-card">
+            <div class="stat-value">${quizzes.length}</div>
+            <div class="stat-label">Quizzes Taken</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${average}%</div>
+            <div class="stat-label">Average Score</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${best}%</div>
+            <div class="stat-label">Best Score</div>
+          </div>
+        `;
+      }
 
-</body>
+      function renderTable() {
+        if (quizzes.length === 0) {
+          quizTableBody.innerHTML = `
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">
+                  <div class="empty-icon">—</div>
+                  <p>You haven't attempted any quizzes yet.</p>
+                </div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        quizzes.forEach((quiz, index) => {
+          const percentage = Math.round((quiz.score / quiz.total) * 100);
+          const badgeClass = percentage >= 70 ? "badge-done" : "badge-missed";
+          const badgeText = percentage >= 70 ? "Passed" : "Failed";
+
+          const row = document.createElement("tr");
+          row.style.cursor = "pointer";
+          row.tabIndex = 0;
+          row.setAttribute("role", "button");
+          row.setAttribute(
+            "aria-label",
+            `View details for ${quiz.title}, scored ${quiz.score} out of ${quiz.total}`,
+          );
+          row.innerHTML = `
+            <td>${quiz.title}</td>
+            <td>${quiz.date}</td>
+            <td class="score-cell">${quiz.score} / ${quiz.total} (${percentage}%)</td>
+            <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+          `;
+          row.addEventListener("click", () => openModal(index, row));
+          row.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              openModal(index, row);
+            }
+          });
+          quizTableBody.appendChild(row);
+        });
+      }
+
+      function openModal(index, triggerRow) {
+        const quiz = quizzes[index];
+        const fraction = quiz.score / quiz.total;
+        const dashoffset = circleCircumference * (1 - fraction);
+
+        lastFocusedRow = triggerRow || null;
+
+        document.getElementById("modalEyebrow").textContent = quiz.title;
+        document.getElementById("modalTitle").textContent = "Quiz complete";
+        document.getElementById("modalResultStatusNote").textContent =
+          quiz.note;
+        document.getElementById("scoreDisplay").textContent = quiz.score;
+        document.getElementById("scoreOutOf").textContent =
+          `out of ${quiz.total}`;
+        document.getElementById("scoreProgressCircle").style.strokeDashoffset =
+          dashoffset;
+
+        const reviewContainer = document.getElementById("answerReview");
+        reviewContainer.innerHTML = "";
+
+        quiz.questions.forEach((item) => {
+          const reviewItem = document.createElement("div");
+          reviewItem.className = `review-item ${item.correct ? "correct" : "incorrect"}`;
+
+          if (item.correct) {
+            reviewItem.innerHTML = `
+              <p class="review-question">${item.question}</p>
+              <div class="review-answer-row">
+                <span class="review-status-icon">✓</span>
+                <span class="reviewYourAnswer">Your answer: ${item.yourAnswer}</span>
+              </div>
+            `;
+          } else {
+            reviewItem.innerHTML = `
+              <p class="review-question">${item.question}</p>
+              <div class="review-answer-row">
+                <span class="review-status-icon">✕</span>
+                <span class="reviewYourAnswer">Your answer: ${item.yourAnswer}</span>
+              </div>
+              <div class="review-answer-row">
+                <span class="reviewCorrectAnswer">Correct answer: ${item.correctAnswer}</span>
+              </div>
+            `;
+          }
+
+          reviewContainer.appendChild(reviewItem);
+        });
+
+        quizModalOverlay.classList.add("show");
+        modalCloseBtn.focus();
+      }
+
+      function closeModal() {
+        quizModalOverlay.classList.remove("show");
+        if (lastFocusedRow) {
+          lastFocusedRow.focus();
+        }
+      }
+
+      modalCloseBtn.addEventListener("click", closeModal);
+      quizModalOverlay.addEventListener("click", (event) => {
+        if (event.target === quizModalOverlay) {
+          closeModal();
+        }
+      });
+      document.addEventListener("keydown", (event) => {
+        if (
+          event.key === "Escape" &&
+          quizModalOverlay.classList.contains("show")
+        ) {
+          closeModal();
+        }
+      });
+
+      document
+        .getElementById("backToDashboardBtn")
+        .addEventListener("click", () => {
+          window.location.href = "student-dashboard.html";
+        });
+
+      document
+        .getElementById("logoutBtnStudent")
+        .addEventListener("click", () => {
+          localStorage.removeItem("authToken");
+          window.location.href = "login.html";
+        });
+
+      renderStats();
+      renderTable();
+    </script>
+  </body>
 </html>

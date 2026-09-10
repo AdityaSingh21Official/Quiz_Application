@@ -2,19 +2,25 @@
   const token = localStorage.getItem("token");
 
   if (!token) {
-    window.location.href = "/";
+    window.location.href = "missing.error.html";
     return;
   }
 
-  const response = await fetch("/api/postLogin/authorize", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  let response;
+  try {
+    response = await fetch("/api/postLogin/authorize", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    window.location.href = "server.error.html";
+    return;
+  }
 
   if (!response.ok) {
     localStorage.removeItem("token");
-    window.location.href = "/";
+    window.location.href = "missing.error.html";
     return;
   }
 

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Session Expired | Portal</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .state-card {
+        max-width: 440px;
+        width: 100%;
+        text-align: center;
+      }
+      .state-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 24px;
+        border-radius: 50%;
+        background: var(--yellow-tint);
+        border: 1.5px solid rgba(147, 101, 13, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .state-icon svg {
+        width: 30px;
+        height: 30px;
+        color: var(--gold-deep);
+      }
+      .state-card h2 {
+        margin-bottom: 10px;
+      }
+      .state-card p {
+        margin-bottom: 30px;
+      }
+      .state-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .state-code {
+        margin-top: 28px;
+        padding-top: 16px;
+        border-top: 1px solid var(--rule-soft);
+        font-family: var(--f-mono);
+        font-size: 12px;
+        color: var(--ink-3);
+        letter-spacing: 0.03em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="result-shell">
+      <div class="card card-pad state-card">
+        <div class="state-icon">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+        </div>
+
+        <span class="eyebrow">Session</span>
+        <h2>Your session has ended</h2>
+        <p>
+          For your security, we sign you out after a period of inactivity. Sign
+          in again to pick up where you left off.
+        </p>
+
+        <div class="state-actions">
+          <a href="index.html" class="btn btn-primary btn-block"
+            >Sign in again</a
+          >
+        </div>
+
+        <div class="state-code">Error 401 · Session token expired</div>
+      </div>
+    </div>
+  </body>
+</html>

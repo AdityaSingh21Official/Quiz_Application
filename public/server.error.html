@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Server Unavailable | Portal</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .state-card {
+        max-width: 440px;
+        width: 100%;
+        text-align: center;
+      }
+      .state-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 24px;
+        border-radius: 50%;
+        background: var(--red-tint);
+        border: 1.5px solid rgba(194, 53, 43, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .state-icon svg {
+        width: 30px;
+        height: 30px;
+        color: var(--red);
+      }
+      .state-card h2 {
+        margin-bottom: 10px;
+      }
+      .state-card p {
+        margin-bottom: 30px;
+      }
+      .state-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .state-code {
+        margin-top: 28px;
+        padding-top: 16px;
+        border-top: 1px solid var(--rule-soft);
+        font-family: var(--f-mono);
+        font-size: 12px;
+        color: var(--ink-3);
+        letter-spacing: 0.03em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="result-shell">
+      <div class="card card-pad state-card">
+        <div class="state-icon">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+            ></path>
+          </svg>
+        </div>
+
+        <span class="eyebrow">System status</span>
+        <h2>We can't reach the server</h2>
+        <p>
+          This looks like a problem on our end, not yours. Please try again in a
+          moment.
+        </p>
+
+        <div class="state-actions">
+          <button
+            type="button"
+            class="btn btn-primary btn-block"
+            onclick="window.location.reload()"
+          >
+            Try again
+          </button>
+          <a href="index.html" class="btn btn-outline btn-block">Return home</a>
+        </div>
+
+        <div class="state-code">Error · Server unreachable</div>
+      </div>
+    </div>
+  </body>
+</html>

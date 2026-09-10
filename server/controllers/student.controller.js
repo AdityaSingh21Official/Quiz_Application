@@ -146,6 +146,8 @@ async function startQuiz(req, res) {
       result.push(temp);
     }
 
+    thisConn.commit();
+
     return res.status(200).json({
       message: `Quiz ${quizId} Ready`,
       primary: quizInfo,
@@ -176,7 +178,7 @@ async function checkQuiz(req, res) {
     thisConn = await db.getConnection();
     await thisConn.beginTransaction();
 
-    const { data, endTime } = req.body;
+    const { data } = req.body;
 
     const attemptToken = req.params.id;
 
@@ -215,15 +217,33 @@ async function checkQuiz(req, res) {
       }
     }
 
-    await db.query(
+    const [responseFinal] = await thisConn.query(
       "update attempts set marks = ? , endtime = now(),  completed = 1 where attempt_token = ?",
       [obtainedMarks, attemptToken],
     );
+
+    thisConn.commit();
 
     return res.status(200).json({
       message: "answers loaded",
       marks: obtainedMarks,
     });
-  } catch (error) {}
+  } catch (error) {
+    if (thisConn) {
+      thisConn.rollback();
+    }
+
+    console.log(
+      "CONTROLLER ERROR : student.controller.js {checkQuiz}\n" + error,
+    );
+
+    return res.status(500).json({
+      message: "Internal server Error",
+    });
+  } finally {
+    if (thisConn) {
+      thisConn.release();
+    }
+  }
 }
 export { getQuizes, generateAttempt, startQuiz, checkQuiz };

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In Required | Portal</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .state-card {
+        max-width: 440px;
+        width: 100%;
+        text-align: center;
+      }
+      .state-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 24px;
+        border-radius: 50%;
+        background: var(--blue-tint);
+        border: 1.5px solid rgba(38, 70, 204, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .state-icon svg {
+        width: 30px;
+        height: 30px;
+        color: var(--blue-deep);
+      }
+      .state-card h2 {
+        margin-bottom: 10px;
+      }
+      .state-card p {
+        margin-bottom: 30px;
+      }
+      .state-code {
+        margin-top: 28px;
+        padding-top: 16px;
+        border-top: 1px solid var(--rule-soft);
+        font-family: var(--f-mono);
+        font-size: 12px;
+        color: var(--ink-3);
+        letter-spacing: 0.03em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="result-shell">
+      <div class="card card-pad state-card">
+        <div class="state-icon">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            ></path>
+          </svg>
+        </div>
+
+        <span class="eyebrow">Access Control</span>
+        <h2>Sign in required</h2>
+        <p>
+          You need to be signed in to view this page. Sign in with your account
+          to continue.
+        </p>
+
+        <a href="index.html" class="btn btn-primary btn-block">Sign in</a>
+
+        <div class="state-code">Error 401 · Missing session token</div>
+      </div>
+    </div>
+  </body>
+</html>
