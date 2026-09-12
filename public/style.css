@@ -1486,22 +1486,21 @@ tbody tr:hover {
 .question-dot.current::before {
   content: "";
   position: absolute;
-  inset: -6px;
+  inset: -4px;
   border: 2px solid var(--blue);
-  border-radius: var(--scribble);
-  transform: rotate(-5deg);
-  animation: circleIn 0.3s var(--ease-back);
+  border-radius: 50%;
+  animation: circleIn 0.2s var(--ease);
   pointer-events: none;
 }
 
 @keyframes circleIn {
   from {
     opacity: 0;
-    transform: rotate(-1deg) scale(0.7);
+    transform: scale(0.85);
   }
   to {
     opacity: 1;
-    transform: rotate(-5deg) scale(1);
+    transform: scale(1);
   }
 }
 
@@ -1638,15 +1637,14 @@ tbody tr:hover {
   color: #fff;
 }
 
-/* The signature: your answer gets circled, like a pen on paper */
+/* Your selected answer gets a clean ring, not a hand-drawn circle */
 .option-btn.selected .option-marker::before {
   content: "";
   position: absolute;
-  inset: -7px;
+  inset: -5px;
   border: 2px solid var(--blue);
-  border-radius: var(--scribble);
-  transform: rotate(-6deg);
-  animation: circleIn 0.3s var(--ease-back);
+  border-radius: 50%;
+  animation: circleIn 0.2s var(--ease);
   pointer-events: none;
 }
 
@@ -1680,45 +1678,13 @@ tbody tr:hover {
 .result-card {
   max-width: 560px;
   width: 100%;
-  padding: 52px 52px 52px 62px;
+  padding: 52px;
   text-align: center;
   border-radius: var(--r-xl);
   box-shadow: var(--shadow-l);
   animation: cardIn var(--t-slow) var(--ease);
   position: relative;
   background-color: var(--surface);
-  background-image: repeating-linear-gradient(
-    180deg,
-    transparent 0px,
-    transparent 31px,
-    var(--blue-line) 31px,
-    var(--blue-line) 32px
-  );
-}
-
-.result-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 0 26px 26px 0;
-  border-color: transparent var(--surface-2) transparent transparent;
-  filter: drop-shadow(-2px 2px 2px rgba(15, 21, 48, 0.12));
-  z-index: 2;
-}
-
-.result-card::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 34px;
-  width: 1.5px;
-  background: var(--margin-red);
-  pointer-events: none;
 }
 
 /* Score ring */
@@ -1760,42 +1726,16 @@ tbody tr:hover {
   justify-content: center;
 }
 
-/* The grading pen: your score, stamped by hand and circled red */
+/* Your score, in a clean display numeral — no stamp, no tilt */
 #scoreDisplay {
-  font-family: var(--f-hand);
-  font-size: 50px;
-  font-weight: 700;
+  font-family: var(--f-display);
+  font-optical-sizing: auto;
+  font-size: 46px;
+  font-weight: 600;
   margin: 0;
-  color: var(--red);
-  transform: rotate(-3deg);
+  color: var(--ink);
   display: inline-block;
   position: relative;
-}
-
-#scoreDisplay::before {
-  content: "";
-  position: absolute;
-  inset: -16px -22px;
-  border: 3px solid var(--red);
-  border-radius: var(--scribble);
-  transform: rotate(-5deg);
-  animation: stampIn 0.5s var(--ease-back) both;
-  pointer-events: none;
-}
-
-@keyframes stampIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.5) rotate(9deg);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.08) rotate(-6deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(-5deg);
-  }
 }
 
 #scoreOutOf {
@@ -1818,7 +1758,7 @@ tbody tr:hover {
 
 .review-item {
   border: 1px solid var(--rule);
-  border-radius: var(--r-m);
+  border-radius: var(--r-s);
   padding: 18px 20px;
   background: var(--surface);
   transition: box-shadow var(--t-mid) var(--ease);

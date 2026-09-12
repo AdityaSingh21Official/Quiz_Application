@@ -11,7 +11,10 @@
     <div class="app-shell">
       <aside class="sidebar">
         <div class="sidebar-brand">
-          <span class="brand-mark">QA</span> Quiz App
+          <span class="brand-mark">
+            <img src="/assets/logo.png" alt="QA" />
+          </span>
+          Quiz App
         </div>
         <nav class="sidebar-nav">
           <a href="student-dashboard.html" id="navMyQuizzes" class="active"
@@ -22,10 +25,10 @@
           >
         </nav>
         <div class="sidebar-footer">
-          <div class="sidebar-user-avatar">AS</div>
+          <div class="sidebar-user-avatar" id="userAvatar">AS</div>
           <div class="sidebar-user-meta">
-            <div id="studentName">Aarav Shah</div>
-            <div class="role-tag">Student</div>
+            <div class="name" id="studentName"></div>
+            <div class="role-tag" id="role"></div>
           </div>
           <button id="logoutBtnStudent">Log out</button>
         </div>
@@ -90,8 +93,35 @@
         </div>
       </div>
     </div>
+    <div id="logoutModalOverlay" class="modal-overlay">
+      <div class="modal-box">
+        <h3>Confirm Logout</h3>
+        <p></p>
+        <div class="modal-actions">
+          <button
+            type="button"
+            id="cancelLogoutBtn"
+            class="btn btn-ghost btn-sm"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="confirmLogoutBtn"
+            class="btn btn-danger-ghost btn-sm"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
   </body>
   <script>
+    const userName = document.getElementById("studentName");
+    const role = document.getElementById("role");
+    const userAvatar = document.getElementById("userAvatar");
+    loadName();
+    const logoutModalOverlay = document.getElementById("logoutModalOverlay");
     const loadingPlaceholder = document.getElementById("loading-placeholder");
     const confirmStartOverlay = document.getElementById(
       "confirmStartModalOverlay",
@@ -218,6 +248,47 @@
         "width=1200,height=800,resizable=yes,scrollbars=yes",
       );
     }
+
+    function loadName() {
+      const data = {
+        name: localStorage.getItem("userName"),
+        role: localStorage.getItem("role"),
+      };
+
+      if (!data) {
+        userName.textContent = "Loading . . .";
+        role.textContent = "";
+        userAvatar.textContent = "T";
+        return;
+      }
+
+      userName.textContent = data["name"];
+      role.textContent = data["role"];
+
+      userAvatar.textContent = data["name"].split(" ")[0][0];
+    }
+
+    document
+      .getElementById("logoutBtnStudent")
+      .addEventListener("click", function () {
+        logoutModalOverlay.classList.add("show");
+      });
+
+    logoutModalOverlay.addEventListener("click", function (e) {
+      if (e.target.id === "cancelLogoutBtn") {
+        logoutModalOverlay.classList.remove("show");
+        return;
+      }
+      if (e.target.id === "confirmLogoutBtn") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userName");
+        localStorage.removeItem("role");
+        window.location.href = "index.html";
+        return;
+      }
+
+      return;
+    });
   </script>
 </html>
 

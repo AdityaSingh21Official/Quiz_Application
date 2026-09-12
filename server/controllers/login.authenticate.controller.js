@@ -12,8 +12,6 @@ async function teacherAuthenticate(req, res) {
       id,
     ]);
 
-    console.log(response["apassword"]);
-
     if (!response || response.length === 0) {
       return res.status(401).json({
         success: false,
@@ -50,6 +48,10 @@ async function teacherAuthenticate(req, res) {
       success: true,
       message: "Login Succesfull",
       token,
+      credentials: {
+        name: response[0]["aname"],
+        role: "Faculty",
+      },
     });
   } catch (error) {
     console.log("Login Error" + error);
@@ -64,10 +66,9 @@ async function studentAuthenticate(req, res) {
   try {
     const { id, password } = req.body;
 
-    const [response] = await db.query(
-      "select sid, spassword from student where sid = ?",
-      [id],
-    );
+    const [response] = await db.query("select * from student where sid = ?", [
+      id,
+    ]);
 
     if (!response || response.length === 0) {
       return res.status(401).json({
@@ -105,6 +106,10 @@ async function studentAuthenticate(req, res) {
       success: true,
       message: "Login Succesfull",
       token,
+      credentials: {
+        name: response[0]["sname"],
+        role: "Student",
+      },
     });
   } catch (error) {
     console.log("Login Error" + error);

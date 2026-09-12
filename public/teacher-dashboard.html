@@ -421,18 +421,13 @@
       loadName();
     });
 
-    async function loadName() {
-      const token = localStorage.getItem("token");
-      const response = await fetch("api/teacher/credentials", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    function loadName() {
+      const data = {
+        name: localStorage.getItem("userName"),
+        role: localStorage.getItem("role"),
+      };
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      if (!data) {
         teacherName.textContent = "Loading . . .";
         roleName.textContent = "";
         userAvatar.textContent = "T";
@@ -456,6 +451,8 @@
       }
       if (e.target.id === "confirmLogoutBtn") {
         localStorage.removeItem("token");
+        localStorage.removeItem("userName");
+        localStorage.removeItem("role");
         window.location.href = "index.html";
         return;
       }

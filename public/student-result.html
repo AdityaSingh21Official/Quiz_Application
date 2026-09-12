@@ -11,7 +11,10 @@
     <div class="app-shell">
       <aside class="sidebar">
         <div class="sidebar-brand">
-          <span class="brand-mark">QA</span> Quiz App
+          <span class="brand-mark">
+            <img src="/assets/logo.png" alt="QA" />
+          </span>
+          Quiz App
         </div>
         <nav class="sidebar-nav">
           <a href="student-dashboard.html" id="navMyQuizzes" class=""
@@ -22,10 +25,10 @@
           >
         </nav>
         <div class="sidebar-footer">
-          <div class="sidebar-user-avatar">AS</div>
+          <div class="sidebar-user-avatar" id="userAvatar">AS</div>
           <div class="sidebar-user-meta">
             <span class="name" id="studentName">Aarav Shah</span>
-            <span class="role-tag">Student</span>
+            <span class="role-tag" id="role">Student</span>
           </div>
           <button id="logoutBtnStudent">Log out</button>
         </div>
@@ -54,7 +57,15 @@
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody id="quizTableBody"></tbody>
+            <tbody id="quizTableBody">
+              <tr>
+                <td colspan="4">
+                  <div class="empty-state">
+                    <p>Loading your results…</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </main>
@@ -86,101 +97,108 @@
         </div>
       </div>
     </div>
+    <div id="logoutModalOverlay" class="modal-overlay">
+      <div class="modal-box">
+        <h3>Confirm Logout</h3>
+        <p></p>
+        <div class="modal-actions">
+          <button
+            type="button"
+            id="cancelLogoutBtn"
+            class="btn btn-ghost btn-sm"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="confirmLogoutBtn"
+            class="btn btn-danger-ghost btn-sm"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
 
     <script>
-      const quizzes = [
-        {
-          title: "Cell Biology — Unit 3",
-          date: "Sep 8, 2026",
-          note: "Submitted with 2 minutes remaining.",
-          score: 9,
-          total: 12,
-          questions: [
-            {
-              question:
-                "1. Which organelle is primarily responsible for producing ATP?",
-              yourAnswer: "Mitochondrion",
-              correctAnswer: "Mitochondrion",
-              correct: true,
-            },
-            {
-              question: "2. What is the powerhouse's outer structure called?",
-              yourAnswer: "Cristae",
-              correctAnswer: "Double membrane",
-              correct: false,
-            },
-            {
-              question: "3. Where does the Krebs cycle take place?",
-              yourAnswer: "Mitochondrial matrix",
-              correctAnswer: "Mitochondrial matrix",
-              correct: true,
-            },
-          ],
-        },
-        {
-          title: "Genetics — Unit 1",
-          date: "Sep 5, 2026",
-          note: "Submitted with 4 minutes remaining.",
-          score: 6,
-          total: 10,
-          questions: [
-            {
-              question: "1. What is a heterozygous genotype?",
-              yourAnswer: "Two different alleles",
-              correctAnswer: "Two different alleles",
-              correct: true,
-            },
-            {
-              question: "2. Which base pairs with adenine in DNA?",
-              yourAnswer: "Guanine",
-              correctAnswer: "Thymine",
-              correct: false,
-            },
-            {
-              question: "3. What is the term for a gene's alternate forms?",
-              yourAnswer: "Alleles",
-              correctAnswer: "Alleles",
-              correct: true,
-            },
-          ],
-        },
-        {
-          title: "Plant Physiology — Unit 2",
-          date: "Aug 29, 2026",
-          note: "Submitted with 0 minutes remaining.",
-          score: 11,
-          total: 12,
-          questions: [
-            {
-              question: "1. Where does photosynthesis primarily occur?",
-              yourAnswer: "Chloroplast",
-              correctAnswer: "Chloroplast",
-              correct: true,
-            },
-            {
-              question: "2. What pigment absorbs light energy?",
-              yourAnswer: "Chlorophyll",
-              correctAnswer: "Chlorophyll",
-              correct: true,
-            },
-            {
-              question: "3. What gas is released during photosynthesis?",
-              yourAnswer: "Carbon dioxide",
-              correctAnswer: "Oxygen",
-              correct: false,
-            },
-          ],
-        },
-      ];
-
-      quizzes.sort((a, b) => new Date(b.date) - new Date(a.date));
+      const API_BASE = "/api";
+      const RESULTS_ENDPOINT = `${API_BASE}/student/myResults`;
+      const ATTEMPT_ENDPOINT = `${API_BASE}/student/thisResponse`;
 
       const circleCircumference = 370;
+
+      const userName = document.getElementById("studentName");
+      const role = document.getElementById("role");
+      const userAvatar = document.getElementById("userAvatar");
+      loadName();
+
       const quizTableBody = document.getElementById("quizTableBody");
       const summaryStats = document.getElementById("summaryStats");
       const quizModalOverlay = document.getElementById("quizModalOverlay");
       const modalCloseBtn = document.getElementById("modalCloseBtn");
+
+      let quizzes = [];
+      let metaData = { totalQuizTaken: 0, avgScore: 0, bestScore: 0 };
       let lastFocusedRow = null;
+
+      function getToken() {
+        return localStorage.getItem("token");
+      }
+
+      function authHeaders() {
+        const token = getToken();
+        return token ? { Authorization: `Bearer ${token}` } : {};
+      }
+
+      function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        if (isNaN(d)) return dateStr;
+        return d.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+      }
+
+      async function fetchResults() {
+        try {
+          const res = await fetch(RESULTS_ENDPOINT, { headers: authHeaders() });
+          if (!res.ok)
+            throw new Error(`Failed to fetch results (${res.status})`);
+          const payload = await res.json();
+
+          quizzes = payload.results;
+          quizzes.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+          metaData = payload.metaData;
+
+          renderStats();
+          renderTable();
+        } catch (err) {
+          console.error(err);
+          quizTableBody.innerHTML = `
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">
+                  <p>Couldn't load your results. Please try again.</p>
+                </div>
+              </td>
+            </tr>
+          `;
+        }
+      }
+
+      async function fetchAttemptReview(attemptId) {
+        const res = await fetch("/api/student/thisResponse", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify({ attemptToken: attemptId }),
+        });
+        if (!res.ok)
+          throw new Error(`Failed to fetch attempt review (${res.status})`);
+        const payload = await res.json();
+        return payload.data;
+      }
 
       function renderStats() {
         if (quizzes.length === 0) {
@@ -188,25 +206,17 @@
           return;
         }
 
-        const percentages = quizzes.map((q) =>
-          Math.round((q.score / q.total) * 100),
-        );
-        const average = Math.round(
-          percentages.reduce((a, b) => a + b, 0) / percentages.length,
-        );
-        const best = Math.max(...percentages);
-
         summaryStats.innerHTML = `
           <div class="stat-card">
-            <div class="stat-value">${quizzes.length}</div>
+            <div class="stat-value">${metaData.totalQuizTaken}</div>
             <div class="stat-label">Quizzes Taken</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value">${average}%</div>
+            <div class="stat-value">${metaData.avgScore}%</div>
             <div class="stat-label">Average Score</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value">${best}%</div>
+            <div class="stat-value">${metaData.bestScore}%</div>
             <div class="stat-label">Best Score</div>
           </div>
         `;
@@ -227,10 +237,11 @@
           return;
         }
 
-        quizzes.forEach((quiz, index) => {
-          const percentage = Math.round((quiz.score / quiz.total) * 100);
-          const badgeClass = percentage >= 70 ? "badge-done" : "badge-missed";
-          const badgeText = percentage >= 70 ? "Passed" : "Failed";
+        quizTableBody.innerHTML = "";
+
+        quizzes.forEach((quiz) => {
+          const badgeClass = quiz.passeed ? "badge-done" : "badge-missed";
+          const badgeText = quiz.passeed ? "Passed" : "Failed";
 
           const row = document.createElement("tr");
           row.style.cursor = "pointer";
@@ -238,36 +249,35 @@
           row.setAttribute("role", "button");
           row.setAttribute(
             "aria-label",
-            `View details for ${quiz.title}, scored ${quiz.score} out of ${quiz.total}`,
+            `View details for ${quiz.quizTitle}, scored ${quiz.score} out of ${quiz.total}`,
           );
           row.innerHTML = `
-            <td>${quiz.title}</td>
-            <td>${quiz.date}</td>
-            <td class="score-cell">${quiz.score} / ${quiz.total} (${percentage}%)</td>
+            <td>${quiz.quizTitle}</td>
+            <td>${formatDate(quiz.date)}</td>
+            <td class="score-cell">${quiz.score} / ${quiz.total} (${quiz.percentage}%)</td>
             <td><span class="badge ${badgeClass}">${badgeText}</span></td>
           `;
-          row.addEventListener("click", () => openModal(index, row));
+          row.addEventListener("click", () => openModal(quiz, row));
           row.addEventListener("keydown", (event) => {
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
-              openModal(index, row);
+              openModal(quiz, row);
             }
           });
           quizTableBody.appendChild(row);
         });
       }
 
-      function openModal(index, triggerRow) {
-        const quiz = quizzes[index];
-        const fraction = quiz.score / quiz.total;
-        const dashoffset = circleCircumference * (1 - fraction);
-
+      async function openModal(quiz, triggerRow) {
         lastFocusedRow = triggerRow || null;
 
-        document.getElementById("modalEyebrow").textContent = quiz.title;
+        const fraction = quiz.total ? quiz.score / quiz.total : 0;
+        const dashoffset = circleCircumference * (1 - fraction);
+
+        document.getElementById("modalEyebrow").textContent = quiz.quizTitle;
         document.getElementById("modalTitle").textContent = "Quiz complete";
         document.getElementById("modalResultStatusNote").textContent =
-          quiz.note;
+          quiz.passeed ? "You passed this quiz." : "You didn't pass this quiz.";
         document.getElementById("scoreDisplay").textContent = quiz.score;
         document.getElementById("scoreOutOf").textContent =
           `out of ${quiz.total}`;
@@ -275,38 +285,47 @@
           dashoffset;
 
         const reviewContainer = document.getElementById("answerReview");
-        reviewContainer.innerHTML = "";
-
-        quiz.questions.forEach((item) => {
-          const reviewItem = document.createElement("div");
-          reviewItem.className = `review-item ${item.correct ? "correct" : "incorrect"}`;
-
-          if (item.correct) {
-            reviewItem.innerHTML = `
-              <p class="review-question">${item.question}</p>
-              <div class="review-answer-row">
-                <span class="review-status-icon">✓</span>
-                <span class="reviewYourAnswer">Your answer: ${item.yourAnswer}</span>
-              </div>
-            `;
-          } else {
-            reviewItem.innerHTML = `
-              <p class="review-question">${item.question}</p>
-              <div class="review-answer-row">
-                <span class="review-status-icon">✕</span>
-                <span class="reviewYourAnswer">Your answer: ${item.yourAnswer}</span>
-              </div>
-              <div class="review-answer-row">
-                <span class="reviewCorrectAnswer">Correct answer: ${item.correctAnswer}</span>
-              </div>
-            `;
-          }
-
-          reviewContainer.appendChild(reviewItem);
-        });
+        reviewContainer.innerHTML = `<p class="empty-state">Loading answers…</p>`;
 
         quizModalOverlay.classList.add("show");
         modalCloseBtn.focus();
+
+        try {
+          const questions = await fetchAttemptReview(quiz.attmptId);
+          reviewContainer.innerHTML = "";
+
+          questions.forEach((item) => {
+            const isCorrect = item.selectedId === item.correctId;
+            const reviewItem = document.createElement("div");
+            reviewItem.className = `review-item ${isCorrect ? "correct" : "incorrect"}`;
+
+            if (isCorrect) {
+              reviewItem.innerHTML = `
+                <p class="review-question">${item.questionText}</p>
+                <div class="review-answer-row">
+                  <span class="review-status-icon">✓</span>
+                  <span class="reviewYourAnswer">Your answer: ${item.selectedText ?? "No answer"}</span>
+                </div>
+              `;
+            } else {
+              reviewItem.innerHTML = `
+                <p class="review-question">${item.questionText}</p>
+                <div class="review-answer-row">
+                  <span class="review-status-icon">✕</span>
+                  <span class="reviewYourAnswer">Your answer: ${item.selectedText ?? "No answer"}</span>
+                </div>
+                <div class="review-answer-row">
+                  <span class="reviewCorrectAnswer">Correct answer: ${item.correctText}</span>
+                </div>
+              `;
+            }
+
+            reviewContainer.appendChild(reviewItem);
+          });
+        } catch (err) {
+          console.error(err);
+          reviewContainer.innerHTML = `<p class="empty-state">Couldn't load answer review.</p>`;
+        }
       }
 
       function closeModal() {
@@ -337,15 +356,50 @@
           window.location.href = "student-dashboard.html";
         });
 
+      fetchResults();
+
+      function loadName() {
+        const data = {
+          name: localStorage.getItem("userName"),
+          role: localStorage.getItem("role"),
+        };
+
+        if (!data) {
+          userName.textContent = "Loading . . .";
+          role.textContent = "";
+          userAvatar.textContent = "T";
+          return;
+        }
+
+        userName.textContent = data["name"];
+        role.textContent = data["role"];
+
+        userAvatar.textContent = data["name"].split(" ")[0][0];
+      }
+
+      const logoutModalOverlay = document.getElementById("logoutModalOverlay");
+
       document
         .getElementById("logoutBtnStudent")
-        .addEventListener("click", () => {
-          localStorage.removeItem("authToken");
-          window.location.href = "login.html";
+        .addEventListener("click", function () {
+          logoutModalOverlay.classList.add("show");
         });
 
-      renderStats();
-      renderTable();
+      logoutModalOverlay.addEventListener("click", function (e) {
+        if (e.target.id === "cancelLogoutBtn") {
+          logoutModalOverlay.classList.remove("show");
+          return;
+        }
+        if (e.target.id === "confirmLogoutBtn") {
+          localStorage.removeItem("token");
+          localStorage.removeItem("userName");
+          localStorage.removeItem("role");
+          window.location.href = "index.html";
+          return;
+        }
+
+        return;
+      });
     </script>
   </body>
 </html>
