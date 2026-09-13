@@ -1,29 +1,5 @@
 import { db } from "../database/db.config.js";
 
-async function myCredentials(req, res) {
-  try {
-    const userId = req.user.userId;
-    const role = req.user.role;
-
-    const [name] = await db.query("select aname from admin where aid = ?", [
-      userId,
-    ]);
-
-    return res.status(200).json({
-      name: name[0]["aname"],
-      role: role,
-    });
-  } catch (error) {
-    console.log(
-      "CONTROLLER ERROR : teacher.controller {myCredentials}" + error,
-    );
-
-    return res.status(200).json({
-      message: "Internal Server Error",
-    });
-  }
-}
-
 async function createQuiz(req, res) {
   let thisConn;
 
@@ -422,11 +398,95 @@ async function updateQuiz(req, res) {
   }
 }
 
+async function myMiniQuizData(req, res) {
+  try {
+    const userId = req.user.userId;
+    const [response] = await db.query(
+      "select quiz_id, quiz_title from quiz where aid = ?",
+      [userId],
+    );
+
+    if (!response || response.length === 0) {
+      return res.status(400).json({
+        message: "No quizes found for user",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Quizez found !!",
+      data: response,
+    });
+  } catch (error) {
+    console.log(
+      "CONTROLLER ERROR : teacher.controller {myMiniQuizData}\n" + error,
+    );
+
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+async function StudentResults(req, res) {
+  try {
+    const { quizId } = req.body;
+
+    const [metaData] = await db.query(
+      `
+      select (select count(*) from student) as totalEnrolled, 
+      count(distinct a.sid) as attemptedStudents, avg(a.marks)
+      from attempts a where a.quiz_id = ?
+      `,
+      [quizId],
+    );
+
+    const content = [];
+
+    if (metaData[0]["attemptedStudents"] == 0) {
+      return res.status(200).json({
+        message: "No Students Attempted this Quiz yet!!!",
+        metaData: metaData,
+        content: content,
+      });
+    }
+
+    const quizId1 = quizId;
+    let quizId2 = quizId;
+
+    const [response] = await db.query(
+      `
+      select s.sid , s.sname , best.bestMarks, best.endtime-best.starttime as timetaken 
+      from student s left join 
+      ( select a1.sid, a1.marks as bestMarks, a1.starttime, a1.endtime from attempts a1 where a1.quiz_id = ? 
+       and a1.marks = ( select max(a2.marks) from attempts a2 where a2.sid = a1.sid and a2.quiz_id = ?)
+       ) 
+       best on best.sid = s.sid
+             `,
+      [quizId1, quizId2],
+    );
+
+    return res.status(200).json({
+      message: "Data fetched",
+      metaData: metaData,
+      content: response,
+    });
+  } catch (error) {
+    console.log(
+      "CONTROLLER ERROR : teacher.controller {StudentResults}\n" + error,
+    );
+
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
 export {
-  myCredentials,
   createQuiz,
   getMyQuizes,
   deleteQuiz,
   getThisQuiz,
   updateQuiz,
+  myMiniQuizData,
+  StudentResults,
 };

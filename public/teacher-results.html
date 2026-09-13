@@ -1,102 +1,356 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Results · Quiz App</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Results · Quiz App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <span class="brand-mark">
+            <img src="assets/logo.png" alt="" />
+          </span>
+          Quiz App
+        </div>
+        <nav class="sidebar-nav">
+          <a href="teacher-dashboard.html" id="navQuestions"
+            >Create &amp; manage quizzes</a
+          >
+          <a href="teacher-results.html" id="navResults" class="active"
+            >Student results</a
+          >
+        </nav>
+        <div class="sidebar-footer">
+          <div class="sidebar-user-avatar" id="userAvatar">RT</div>
+          <div class="sidebar-user-meta">
+            <div id="teacherName">Rita Mehta</div>
+            <div class="role-tag" id="roleName">Teacher</div>
+          </div>
+          <button id="logoutBtn">Log out</button>
+        </div>
+      </aside>
 
-<div class="app-shell">
+      <main class="main-area">
+        <div class="main-header">
+          <div>
+            <span class="eyebrow">Gradebook</span>
+            <h1>Student results</h1>
+          </div>
+          <div class="field" style="margin: 0; min-width: 260px">
+            <label for="quizFilterSelect">Viewing quiz</label>
+            <select id="quizFilterSelect" class="select">
+              <option value="1">Cell Biology — Unit 3</option>
+              <option value="2">World War II — Timeline</option>
+            </select>
+          </div>
+        </div>
 
-  <aside class="sidebar">
-    <div class="sidebar-brand"><span class="brand-mark">QA</span> Quiz App</div>
-    <nav class="sidebar-nav">
-      <a href="teacher-dashboard.html" id="navQuestions">Create &amp; manage quizzes</a>
-      <a href="teacher-results.html" id="navResults" class="active">Student results</a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-user-avatar">RT</div>
-      <div class="sidebar-user-meta">
-        <div id="teacherName">Rita Mehta</div>
-        <div class="role-tag">Teacher</div>
-      </div>
-      <button id="logoutBtn">Log out</button>
+        <!-- Summary stats -->
+        <div id="resultsSummary" class="summary-stats">
+          <div class="stat-card">
+            <div class="stat-value" id="totalStudents">28</div>
+            <div class="stat-label">Students enrolled</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="totalAttempted">21</div>
+            <div class="stat-label">Attempted so far</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="averageScore">7.4</div>
+            <div class="stat-label">Average score</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="resultsTable">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Status</th>
+                <th>Score</th>
+                <th>Time taken</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+              <tr class="result-row" data-student-id="101">
+                <td class="studentName">Aarav Shah</td>
+                <td class="attemptStatus">
+                  <span class="badge badge-done">Attempted</span>
+                </td>
+                <td class="studentScore score-cell">9 / 12</td>
+                <td class="timeTaken">13m 40s</td>
+              </tr>
+              <tr class="result-row" data-student-id="102">
+                <td class="studentName">Meera Iyer</td>
+                <td class="attemptStatus">
+                  <span class="badge badge-done">Attempted</span>
+                </td>
+                <td class="studentScore score-cell">11 / 12</td>
+                <td class="timeTaken">10m 05s</td>
+              </tr>
+              <tr class="result-row" data-student-id="103">
+                <td class="studentName">Kabir Nair</td>
+                <td class="attemptStatus">
+                  <span class="badge badge-pending">Not attempted</span>
+                </td>
+                <td class="studentScore score-cell">—</td>
+                <td class="timeTaken">—</td>
+              </tr>
+              <tr class="result-row" data-student-id="104">
+                <td class="studentName">Sana Vora</td>
+                <td class="attemptStatus">
+                  <span class="badge badge-missed">Auto‑submitted</span>
+                </td>
+                <td class="studentScore score-cell">6 / 12</td>
+                <td class="timeTaken">15m 00s</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
     </div>
-  </aside>
-
-  <main class="main-area">
-    <div class="main-header">
-      <div>
-        <span class="eyebrow">Gradebook</span>
-        <h1>Student results</h1>
-      </div>
-      <div class="field" style="margin:0; min-width:260px;">
-        <label for="quizFilterSelect">Viewing quiz</label>
-        <select id="quizFilterSelect" class="select">
-          <option value="1">Cell Biology — Unit 3</option>
-          <option value="2">World War II — Timeline</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Summary stats -->
-    <div id="resultsSummary" class="summary-stats">
-      <div class="stat-card">
-        <div class="stat-value" id="totalStudents">28</div>
-        <div class="stat-label">Students enrolled</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="totalAttempted">21</div>
-        <div class="stat-label">Attempted so far</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="averageScore">7.4</div>
-        <div class="stat-label">Average score</div>
+    <div id="logoutModalOverlay" class="modal-overlay">
+      <div class="modal-box">
+        <h3>Confirm Logout</h3>
+        <p></p>
+        <div class="modal-actions">
+          <button
+            type="button"
+            id="cancelLogoutBtn"
+            class="btn btn-ghost btn-sm"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="confirmLogoutBtn"
+            class="btn btn-danger-ghost btn-sm"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </div>
+  </body>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const quizSelect = document.getElementById("quizFilterSelect");
+      const totalStudentsEl = document.getElementById("totalStudents");
+      const totalAttemptedEl = document.getElementById("totalAttempted");
+      const averageScoreEl = document.getElementById("averageScore");
+      const resultsTableBody = document.getElementById("resultsTableBody");
+      loadName();
 
-    <div class="table-wrap">
-      <table id="resultsTable">
-        <thead>
-          <tr>
-            <th>Student</th>
-            <th>Status</th>
-            <th>Score</th>
-            <th>Time taken</th>
-          </tr>
-        </thead>
-        <tbody id="resultsTableBody">
-          <tr class="result-row" data-student-id="101">
-            <td class="studentName">Aarav Shah</td>
-            <td class="attemptStatus"><span class="badge badge-done">Attempted</span></td>
-            <td class="studentScore score-cell">9 / 12</td>
-            <td class="timeTaken">13m 40s</td>
-          </tr>
-          <tr class="result-row" data-student-id="102">
-            <td class="studentName">Meera Iyer</td>
-            <td class="attemptStatus"><span class="badge badge-done">Attempted</span></td>
-            <td class="studentScore score-cell">11 / 12</td>
-            <td class="timeTaken">10m 05s</td>
-          </tr>
-          <tr class="result-row" data-student-id="103">
-            <td class="studentName">Kabir Nair</td>
-            <td class="attemptStatus"><span class="badge badge-pending">Not attempted</span></td>
-            <td class="studentScore score-cell">—</td>
-            <td class="timeTaken">—</td>
-          </tr>
-          <tr class="result-row" data-student-id="104">
-            <td class="studentName">Sana Vora</td>
-            <td class="attemptStatus"><span class="badge badge-missed">Auto‑submitted</span></td>
-            <td class="studentScore score-cell">6 / 12</td>
-            <td class="timeTaken">15m 00s</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </main>
-</div>
+      init();
 
-</body>
+      function authHeaders() {
+        const token = localStorage.getItem("token");
+        return {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        };
+      }
+
+      async function init() {
+        await loadQuizzes();
+
+        if (quizSelect.value) {
+          await loadResults(quizSelect.value);
+        }
+
+        quizSelect.addEventListener("change", () => {
+          if (quizSelect.value) {
+            loadResults(quizSelect.value);
+          }
+        });
+      }
+
+      async function loadQuizzes() {
+        try {
+          const res = await fetch("/api/teacher/myMiniQuizData", {
+            method: "GET",
+            headers: authHeaders(),
+          });
+
+          if (!res.ok)
+            throw new Error(`Failed to fetch quizzes: ${res.status}`);
+
+          const data = await res.json();
+          const quizzes = data.data || [];
+
+          quizSelect.innerHTML = "";
+
+          if (quizzes.length === 0) {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = "No quizzes found";
+            quizSelect.appendChild(opt);
+            return;
+          }
+
+          quizzes.forEach((quiz) => {
+            const opt = document.createElement("option");
+            opt.value = quiz.quiz_id;
+            opt.textContent = quiz.quiz_title;
+            quizSelect.appendChild(opt);
+          });
+        } catch (err) {
+          console.error("Error loading quizzes:", err);
+          quizSelect.innerHTML =
+            '<option value="">Failed to load quizzes</option>';
+        }
+      }
+
+      async function loadResults(quizId) {
+        try {
+          const res = await fetch("/api/teacher/seeresults", {
+            method: "PUT",
+            headers: authHeaders(),
+            body: JSON.stringify({ quizId: quizId }),
+          });
+
+          if (!res.ok)
+            throw new Error(`Failed to fetch results: ${res.status}`);
+
+          const data = await res.json();
+          const meta = Array.isArray(data.metaData)
+            ? data.metaData[0]
+            : data.metaData;
+
+          renderSummary(meta);
+          renderTable(data.content || [], data.message);
+        } catch (err) {
+          console.error("Error loading results:", err);
+          resultsTableBody.innerHTML =
+            '<tr><td colspan="4">Failed to load results.</td></tr>';
+        }
+      }
+
+      function renderSummary(meta) {
+        if (!meta) {
+          totalStudentsEl.textContent = "0";
+          totalAttemptedEl.textContent = "0";
+          averageScoreEl.textContent = "—";
+          return;
+        }
+
+        const totalEnrolled = meta.totalEnrolled ?? 0;
+        const attemptedStudents = meta.attemptedStudents ?? 0;
+        const avgMarksRaw = meta["avg(a.marks)"];
+
+        totalStudentsEl.textContent = totalEnrolled;
+        totalAttemptedEl.textContent = attemptedStudents;
+
+        if (avgMarksRaw === null || avgMarksRaw === undefined) {
+          averageScoreEl.textContent = "—";
+        } else {
+          const avgNum = parseFloat(avgMarksRaw);
+          averageScoreEl.textContent = Number.isNaN(avgNum)
+            ? "—"
+            : avgNum.toFixed(1);
+        }
+      }
+
+      function renderTable(students, emptyMessage) {
+        resultsTableBody.innerHTML = "";
+
+        if (students.length === 0) {
+          const message = emptyMessage || "No students found.";
+          resultsTableBody.innerHTML = `<tr><td colspan="4">${escapeHtml(message)}</td></tr>`;
+          return;
+        }
+
+        students.forEach((student) => {
+          const row = document.createElement("tr");
+          row.className = "result-row";
+          row.dataset.studentId = student.sid;
+
+          const attempted =
+            student.bestMarks !== null && student.bestMarks !== undefined;
+
+          const statusBadge = attempted
+            ? '<span class="badge badge-done">Attempted</span>'
+            : '<span class="badge badge-pending">Not attempted</span>';
+
+          const scoreText = attempted ? student.bestMarks : "—";
+          const timeText =
+            attempted &&
+            student.timetaken !== null &&
+            student.timetaken !== undefined
+              ? formatTime(student.timetaken)
+              : "—";
+
+          row.innerHTML = `
+        <td class="studentName">${escapeHtml(student.sname)}</td>
+        <td class="attemptStatus">${statusBadge}</td>
+        <td class="studentScore score-cell">${scoreText}</td>
+        <td class="timeTaken">${timeText}</td>
+      `;
+
+          resultsTableBody.appendChild(row);
+        });
+      }
+
+      function formatTime(totalSeconds) {
+        const seconds = parseInt(totalSeconds, 10);
+        if (Number.isNaN(seconds)) return "—";
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}m ${secs.toString().padStart(2, "0")}s`;
+      }
+
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return "";
+        const div = document.createElement("div");
+        div.textContent = str;
+        return div.innerHTML;
+      }
+    });
+
+    const teacherName = document.getElementById("teacherName");
+    const roleName = document.getElementById("roleName");
+    const defaultUserAvatar = document.getElementById("userAvatar");
+
+    function loadName() {
+      const data = {
+        name: localStorage.getItem("userName"),
+        role: localStorage.getItem("role"),
+      };
+
+      if (!data) {
+        teacherName.textContent = "Loading . . .";
+        roleName.textContent = "";
+        userAvatar.textContent = "T";
+        return;
+      }
+
+      teacherName.textContent = data["name"];
+      roleName.textContent = data["role"];
+
+      defaultUserAvatar.textContent = data["name"].split(" ")[0][0];
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", function () {
+      logoutModalOverlay.classList.add("show");
+    });
+
+    logoutModalOverlay.addEventListener("click", function (e) {
+      if (e.target.id === "cancelLogoutBtn") {
+        logoutModalOverlay.classList.remove("show");
+        return;
+      }
+      if (e.target.id === "confirmLogoutBtn") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userName");
+        localStorage.removeItem("role");
+        window.location.href = "index.html";
+        return;
+      }
+
+      return;
+    });
+  </script>
 </html>

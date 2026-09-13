@@ -1,19 +1,18 @@
 import express from "express";
 import { authorise } from "../middlewares/authorization.middleware.js";
 import {
-  myCredentials,
   createQuiz,
   getMyQuizes,
   deleteQuiz,
   getThisQuiz,
   updateQuiz,
+  myMiniQuizData,
+  StudentResults,
 } from "../controllers/teacher.controller.js";
 import { isTeacher } from "../middlewares/teacherRoleRequired.middleware.js";
 import { validateQuestions } from "../middlewares/validateQuestions.middleware.js";
 
 const teacher = express.Router();
-
-teacher.get("/teacher/credentials", authorise, isTeacher, myCredentials);
 
 teacher.post(
   "/teacher/createQuiz",
@@ -21,6 +20,7 @@ teacher.post(
   isTeacher,
   validateQuestions,
   createQuiz,
+  StudentResults,
 );
 
 teacher.get("/teacher/myQuizes", authorise, isTeacher, getMyQuizes);
@@ -37,4 +37,7 @@ teacher.put(
   updateQuiz,
 );
 
+teacher.get("/teacher/myMiniQuizData", authorise, isTeacher, myMiniQuizData);
+
+teacher.put("/teacher/seeresults", authorise, isTeacher, StudentResults);
 export default teacher;
