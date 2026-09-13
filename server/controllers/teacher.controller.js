@@ -64,7 +64,7 @@ async function createQuiz(req, res) {
     });
   } finally {
     if (thisConn) {
-      thisConn.rollback();
+      thisConn.release();
     }
   }
 }
@@ -76,7 +76,7 @@ async function getMyQuizes(req, res) {
     const [quizes] = await db.query("select * from quiz where aid=?", [userId]);
 
     if (!quizes || quizes.length === 0) {
-      return res.status(200).josn({
+      return res.status(200).json({
         message: `No quizes Found for user ${userId}`,
         data: [],
       });
