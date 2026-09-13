@@ -1,56 +1,27 @@
 # Quiz Application
 
-> **Status: Under Active Development**
+> **Status:** Core functionality complete — hardening and polish in progress.
 
-A full-stack quiz application being developed entirely from scratch using Node.js, Express, MySQL, HTML, CSS, and JavaScript.
+A full-stack quiz application built from scratch using Node.js, Express, MySQL, and vanilla HTML/CSS/JavaScript — no frontend framework, no backend boilerplate/starter kit.
 
-The project is being built to understand and implement the different components of a real-world full-stack application, including authentication, REST APIs, database design, backend architecture, frontend-backend communication, quiz management, and result processing.
-
-This project is currently under development. The architecture and functionality may continue to change as new features are implemented and existing components are improved.
+The project was built as a hands-on exercise in designing a real-world full-stack system end to end: authentication, REST APIs, relational database design, backend architecture, and frontend-backend integration, without following a tutorial.
 
 ## Overview
 
-The Quiz Application is designed around two primary user roles:
+The app is built around two roles sharing a single login flow:
 
-- **Teacher** — Create and manage quizzes, questions, and answer options, and manage quiz-related data.
-- **Student** — Browse available quizzes, attempt quizzes, submit answers, and view results.
+- **Teacher** — creates quizzes (title, time limit), adds questions with up to 4 answer options each, and reviews per-student results and completion status for any quiz they've created.
+- **Student** — sees a dashboard of available quizzes, starts a timed attempt, and gets auto-submitted the moment the clock runs out — or can submit manually before then. Past attempts can be reviewed answer-by-answer against the correct option.
 
-The long-term goal is to build a complete quiz platform with a clean separation between the frontend, backend, authentication, business logic, and database layers.
+## Features
 
-## Current Development Status
-
-The following components are currently being implemented or refined:
-
-- User authentication
-- JWT-based authentication
-- Authentication middleware
-- Teacher functionality
-- Student functionality
-- Quiz creation and management
-- Question and option management
-- MySQL database integration
-- REST API development
-- Frontend and backend integration
-- Quiz attempt functionality
-- Quiz timing and submission logic
-- Result processing
-
-### Planned Improvements
-
-The project is still evolving, and additional functionality is planned, including:
-
-- Complete teacher and student workflows
-- Improved role-based authorization
-- More robust request validation
-- Improved error handling
-- Detailed result and quiz analytics
-- Improved frontend UI/UX
-- Real-time functionality
-- Automated testing
-- API documentation
-- Production deployment
-
-The development roadmap may change as the project progresses.
+- **JWT-based authentication** with a single login form; role (teacher/student) is resolved server-side and encoded into the token.
+- **Role-gated REST API** — every teacher/student route is protected by dedicated middleware (`isTeacher`, `isStudentRole`) that checks the decoded token, not just the UI.
+- **Quiz builder** — teachers can add any number of questions, each with 2–4 options and exactly one marked correct; request-body validation middleware rejects malformed payloads before they touch the database.
+- **Transactional writes** — quiz creation, quiz updates, and quiz deletion each run inside a MySQL transaction, so a partial failure can't leave a quiz with orphaned questions or options.
+- **Timed attempts with anti-cheat handling** — a live countdown ring, warning toasts as time runs low, automatic submission when time expires, and automatic submission if the student switches tabs/loses focus for too long or closes the window mid-attempt.
+- **Result review** — students can revisit a completed attempt and see each question alongside their selected answer and the correct one; teachers get a per-quiz table of every student's status (not attempted / attempted / auto-submitted) and score.
+- **Audit logging** — logins and quiz-creation events are recorded to a `logs` table.
 
 ## Technology Stack
 
@@ -58,63 +29,57 @@ The development roadmap may change as the project progresses.
 
 - HTML5
 - CSS3
-- JavaScript
+- Vanilla JavaScript (no frameworks)
 
 ### Backend
 
 - Node.js
-- Express.js
+- Express.js (v5)
 - REST APIs
 - JSON Web Tokens (JWT)
 
 ### Database
 
 - MySQL
-- MySQL2
+- mysql2 (promise pool + transactions)
 
 ### Development Tools
 
-- Git
-- GitHub
+- Git / GitHub
 - npm
+- nodemon
 
 ## Architecture
 
-The application follows a layered full-stack architecture:
-
-```text
-                        Client
-                          |
-                          | HTTP Requests
-                          v
-                  +----------------+
-                  |    Express     |
-                  |     Server     |
-                  +-------+--------+
-                          |
-             +------------+------------+
-             |            |            |
-             v            v            v
-          Routes      Middleware   Controllers
-             |            |            |
-             +------------+------------+
-                          |
-                          v
-                   Database Layer
-                          |
-                          v
-                       MySQL
+```
+              Client
+                |
+                | HTTP Requests
+                v
+        +----------------+
+        |    Express     |
+        |     Server     |
+        +-------+--------+
+                |
+   +------------+------------+
+   |            |            |
+   v            v            v
+Routes      Middleware   Controllers
+   |            |            |
+   +------------+------------+
+                |
+                v
+         Database Layer
+                |
+                v
+             MySQL
 ```
 
-The intention is to keep routing, authentication, business logic, and database operations separated as the application grows.
+Routing, authentication/authorization, request validation, and database access are kept in separate layers (`routes/`, `middlewares/`, `controllers/`, `database/`).
 
 ## Authentication
 
-Authentication is being implemented using JSON Web Tokens.
-
-The general authentication flow is:
-
-```text
+```
 User
  |
  | Login Credentials
@@ -127,99 +92,97 @@ Database
  |
  | User Verified
  v
-JWT
+JWT (role embedded in payload)
  |
- | Authenticated Request
+ | Authenticated Request (Bearer token)
  v
-Authentication Middleware
+Authorization Middleware
  |
- +---- Valid Token ----> Protected Route
+ +---- Valid Token + Correct Role ----> Protected Route
  |
- +---- Invalid Token --> Request Rejected
+ +---- Invalid/Expired Token/Role -----> Request Rejected (401/403)
 ```
-
-Protected routes can use the authentication middleware to verify the identity of the requesting user before allowing access to restricted functionality.
 
 ## Quiz Flow
 
-The intended teacher workflow is:
+**Teacher**
 
-```text
-Teacher Login
-      |
-      v
-Teacher Dashboard
-      |
-      v
-Create Quiz
-      |
-      +---- Quiz Details
-      |
-      +---- Questions
-      |
-      +---- Answer Options
-      |
-      v
-     Quiz
+```
+Login → Teacher Dashboard → Create Quiz
+                                 |
+                                 +-- Title & time limit
+                                 +-- Questions (2-4 options each, 1 correct)
+                                 v
+                              Quiz Saved
+                                 |
+                                 v
+                    View Results (per student, per quiz)
 ```
 
-The intended student workflow is:
+**Student**
 
-```text
-Student Login
-      |
-      v
-Student Dashboard
-      |
-      v
-Select Quiz
-      |
-      v
-Attempt Quiz
-      |
-      v
-Submit Answers
-      |
-      v
-Evaluate Attempt
-      |
-      v
-View Result
 ```
-
-These workflows are still under development and may change as additional requirements and functionality are introduced.
+Login → Student Dashboard → Select Quiz → Start Attempt
+                                              |
+                                              v
+                                   Countdown begins
+                                              |
+                        Manual Submit  <------+------>  Time Expires
+                                |                              |
+                                +--------------+---------------+
+                                               v
+                                        Attempt Graded
+                                               |
+                                               v
+                                    View Result / Review Answers
+```
 
 ## Project Structure
 
-The current project is organized into separate frontend and backend components:
-
-```text
+```
 Quiz_Application/
 |
 ├── public/
-|   ├── HTML files
-|   ├── CSS
-|   └── Client-side JavaScript
+|   ├── index.html               (login)
+|   ├── teacher-dashboard.html
+|   ├── teacher-results.html
+|   ├── student-dashboard.html
+|   ├── quiz-attempt.html
+|   ├── student-result.html
+|   ├── auth.check.js            (verifies token on protected pages)
+|   ├── style.css
+|   └── assets/
 |
 ├── server/
 |   ├── controllers/
-|   ├── database/
+|   |   ├── login.authenticate.controller.js
+|   |   ├── teacher.controller.js
+|   |   └── student.controller.js
 |   ├── middlewares/
+|   |   ├── authorization.middleware.js
+|   |   ├── teacherRoleRequired.middleware.js
+|   |   ├── isStudentRole.middleware.js
+|   |   └── validateQuestions.middleware.js
 |   ├── routes/
+|   |   ├── login.routes.js
+|   |   ├── teacherRoutes.js
+|   |   └── studentRoutes.js
+|   ├── database/
+|   |   └── db.config.js
+|   ├── package.json
 |   └── server.js
+|
+├── DataBaseERD/
+|   └── ERD.png
 |
 ├── package.json
 ├── package-lock.json
-└── README.md
+└── readme.md
 ```
-
-The structure is intended to keep different responsibilities separated and make the application easier to maintain as development continues.
 
 ## Getting Started
 
 ### Prerequisites
-
-Make sure the following are installed:
 
 - Node.js
 - npm
@@ -228,138 +191,90 @@ Make sure the following are installed:
 
 ### Clone the Repository
 
-```bash
+```
 git clone https://github.com/AdityaSingh21Official/Quiz_Application.git
 cd Quiz_Application
 ```
 
 ### Install Dependencies
 
-Install the project dependencies:
+Dependencies are currently split between the project root and `/server`, so install both:
 
-```bash
-npm install
 ```
-
-If the backend has its own dependencies, install them from the server directory:
-
-```bash
+npm install
 cd server
 npm install
 ```
 
+### Database Setup
+
+Create a MySQL database and the required tables (`admin`, `student`, `quiz`, `question`, `question_option`, `attempts`, `response`, `logs`) matching the schema in `DataBaseERD/ERD.png` before starting the server.
+
 ### Environment Configuration
 
-Create an environment configuration file for the backend and provide the required database credentials.
+Create a `.env` file inside `/server` (never commit this file):
 
-Example:
-
-```env
+```
 PORT=1024
 
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=your_password
 DB_NAME=quiz_application
-```
 
-Do not commit environment files or database credentials to the repository.
+JWT_SECRET=your_long_random_secret
+```
 
 ### Run the Application
 
-Start the backend server from the appropriate directory:
+From the `/server` directory:
 
-```bash
+```
 node server.js
 ```
 
-The application can then be accessed through the configured local server address.
+Or, for auto-restart on file changes during development:
 
-## What I Am Learning Through This Project
+```
+npx nodemon server.js
+```
 
-This project is primarily a hands-on learning project. Rather than following a tutorial and reproducing an existing application, I am building the system independently and learning how its individual components work together.
+The app will be available at `http://localhost:1024` (or whatever `PORT` you set).
 
-Some of the concepts being explored include:
+## Known Limitations
 
-- Designing REST APIs
-- Express.js application structure
-- Backend routing
-- Middleware
-- JWT authentication
-- Authentication and authorization
-- MySQL database design
-- SQL queries and relationships
-- CRUD operations
-- Request validation
-- Error handling
-- Frontend-backend communication
-- Client-side authentication
-- Quiz and result processing
-- Structuring a maintainable backend
+Being upfront about what's simplified for now rather than production-hardened:
+
+- **Passwords are stored and compared in plain text.** Hashing (bcrypt) is planned but not yet implemented — don't reuse real passwords when testing this.
+- **Quiz deadlines are enforced on the client, not the server.** The countdown, warnings, and auto-submit all live in the browser; the API currently accepts a submission whenever it arrives rather than checking elapsed time against the quiz's time limit server-side.
+- **No automated tests yet.**
+
+## What I Learned Through This Project
+
+This was my first full-stack project, built independently without following a tutorial or using outside help on the backend. Concepts worked through hands-on include:
+
+- Designing a REST API and structuring an Express app (routes / middleware / controllers)
+- JWT-based authentication and role-based authorization
+- Relational database design, including associative entities for many-to-many relationships (student attempts, per-question responses)
+- Writing and reasoning about SQL transactions
+- Client-server timing/trust boundaries (and where they still need tightening)
+- Frontend-backend integration without a framework
 
 ## Future Direction
 
-As development continues, the application will gradually move toward a more complete and production-oriented architecture.
-
-Some areas I intend to explore further include:
-
-- Real-time communication
-- WebSocket-based updates
-- Automated testing
-- Better authorization strategies
-- Improved database design
+- Hash passwords before storing them
+- Enforce the quiz time limit server-side as the source of truth
+- Add automated tests
+- Improve request validation and error handling consistency
 - API documentation
-- Performance optimization
-- Deployment
-- Production configuration
-
-## Project Philosophy
-
-The primary purpose of this project is not simply to create a quiz website.
-
-It is an attempt to understand what happens behind a full-stack application:
-
-```text
-Frontend
-   |
-   v
-HTTP Request
-   |
-   v
-Express Route
-   |
-   v
-Middleware
-   |
-   v
-Controller
-   |
-   v
-Database Operation
-   |
-   v
-MySQL
-   |
-   v
-Response
-   |
-   v
-Frontend
-```
-
-Every part of the application is being implemented incrementally to build a stronger understanding of how these components interact.
+- Deployment/production configuration
 
 ## Author
 
 **Aditya Singh**
 
-This project is independently designed and developed by me as a personal full-stack development project.
+Independently designed and built as a personal full-stack learning project.
 
 ## Repository
 
-GitHub:
-https://github.com/AdityaSingh21Official/Quiz_Application
-
----
-
-**Note:** This repository is currently under active development. Features, architecture, and implementation details may change as the project progresses.
+GitHub: <https://github.com/AdityaSingh21Official/Quiz_Application>
