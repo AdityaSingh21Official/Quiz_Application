@@ -9,7 +9,7 @@ const STUDENT_DIR = path.join(__dirname, "..", "uploads", "students");
 
 const ALLOWED = {
   "image/jpeg": ".jpg",
-  "image/png": "png",
+  "image/png": ".png",
   "image/webp": ".webp",
 };
 

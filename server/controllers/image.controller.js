@@ -28,22 +28,56 @@ async function registerNewStudentPhoto(req, res) {
 
     const [dbdata] = await db.query(
       `
-        Select sid from student where sid = ?
+        Select sid, photo_path from student where sid = ?
         `,
       [studentId],
     );
 
     if (!dbdata || dbdata.length === 0) {
+      await cleanup();
       return res.status(400).json({ message: "Invalid Student ID" });
     }
 
+    const pyRes = await fetch("http://127.0.0.1:8000/embed", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: file.filename }),
+      signal: AbortSignal.timeout(15000),
+    }).catch(() => {
+      throw new Error("PYTHON SERVICE UNREACHABLE");
+    });
+
+    const data = await pyRes.json();
+
+    if (pyRes.status === 400) {
+      await cleanup();
+      return res.status(400).json({ message: data.detail });
+    }
+    if (!pyRes.ok) {
+      throw new Error("PYTHON SERVICE ERROR: " + pyRes.status);
+    }
+    if (!Array.isArray(data.embedding) || data.embedding.length !== 512) {
+      throw new Error("PYTHON SERVICE ERROR: bad embedding");
+    }
+
+    await db.query("INSERT IGNORE INTO face_embeding(sid) VALUES(?)", [
+      studentId,
+    ]);
+
+    const embeding = JSON.stringify(data["embedding"]);
     await db.query(
       `
-        update student set photo_path = ?
-        where sid = ?
-        `,
-      [file.filename, studentId],
+      UPDATE student s JOIN face_embeding f ON s.sid = f.sid
+      SET s.photo_path = ?, f.embeding = ?
+      WHERE s.sid = ?
+      `,
+      [file.filename, embeding, studentId],
     );
+
+    const oldPhoto = dbdata[0]["photo_path"];
+    if (oldPhoto && oldPhoto !== file.filename) {
+      await fs.unlink(path.join(STUDENT_DIR, oldPhoto)).catch(() => {});
+    }
 
     return res.json({
       message: "Student Photo Registered",
@@ -57,7 +91,7 @@ async function registerNewStudentPhoto(req, res) {
     );
 
     return res.status(500).json({
-      message: "Internal Server Errro",
+      message: "Internal Server Error",
     });
   }
 }
