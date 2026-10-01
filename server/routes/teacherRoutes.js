@@ -11,7 +11,8 @@ import {
 } from "../controllers/teacher.controller.js";
 import { isTeacher } from "../middlewares/teacherRoleRequired.middleware.js";
 import { validateQuestions } from "../middlewares/validateQuestions.middleware.js";
-
+import { uploadStudentToDisk } from "../middlewares/imgUpload.middleware.js";
+import { registerNewStudentPhoto } from "../controllers/image.controller.js";
 const teacher = express.Router();
 
 teacher.post(
@@ -41,3 +42,11 @@ teacher.get("/teacher/myMiniQuizData", authorise, isTeacher, myMiniQuizData);
 
 teacher.put("/teacher/seeresults", authorise, isTeacher, StudentResults);
 export default teacher;
+
+teacher.post(
+  "/teacher/registerStudent",
+  authorise,
+  isTeacher,
+  uploadStudentToDisk,
+  registerNewStudentPhoto,
+);
