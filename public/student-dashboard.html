@@ -242,11 +242,7 @@
         return;
       }
 
-      const quizWindow = window.open(
-        `/quiz-attempt.html?attempt=${data.attemptToken}`,
-        "QuizWindow",
-        "width=1200,height=800,resizable=yes,scrollbars=yes",
-      );
+      window.open(`/quiz-attempt.html?attempt=${data.attemptToken}`, "_blank");
     }
 
     function loadName() {

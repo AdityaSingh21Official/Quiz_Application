@@ -1,0 +1,32 @@
+{
+  "name": "EvaQuiz",
+  "version": "1.0.1",
+  "description": "Full Stack Quiz Application by Aditya Singh",
+  "main": "main.js",
+  "author": "Aditya Singh",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.Aditya.quizdesktop",
+    "productName": "EvaQuiz by Aditya",
+    "files": [
+      "main.js",
+      "offline.html",
+      "style.css",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  }
+}
