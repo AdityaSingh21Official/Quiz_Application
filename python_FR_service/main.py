@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 MODEL_NAME = "ArcFace"
 
-BASE_DIR = Path(r"secret").resolve()
+BASE_DIR = Path(r"C:\Users\Adi Singh\Desktop\Study.io\Java_Script\PracticeProjects\Full Stack Quiz Application\server\uploads\students").resolve()
 
 
 @asynccontextmanager
@@ -46,3 +46,8 @@ def embed(req: EmbedRequest):
         raise HTTPException(status_code=400, detail="Multiple faces detected")
 
     return {"embedding": faces[0]["embedding"], "model": MODEL_NAME}
+
+
+@app.get("/ping")
+def ping():
+    return {"message" : "FR SERVICE OK"}

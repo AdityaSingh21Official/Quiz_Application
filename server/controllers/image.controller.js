@@ -86,8 +86,7 @@ async function registerNewStudentPhoto(req, res) {
     await cleanup();
 
     console.log(
-      "CONTROLLER ERROR : registration.controller {registerNewStudentPhoto}\n" +
-        error,
+      "CONTROLLER ERROR : image.controller {registerNewStudentPhoto}\n" + error,
     );
 
     return res.status(500).json({

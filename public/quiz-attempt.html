@@ -5,9 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cell Biology — Unit 3 · Quiz App</title>
     <link rel="stylesheet" href="style.css" />
+    <style>
+      #selfView {
+        position: fixed;
+        left: 16px;
+        bottom: 16px;
+        width: 200px;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        transform: scaleX(-1);
+        background: #000;
+        border: 3px solid #2ecc71;
+        border-radius: 12px;
+        z-index: 2000;
+      }
+      #selfView.bad {
+        border-color: #ff4d4d;
+      }
+    </style>
   </head>
   <script src="auth.check.js"></script>
   <body>
+    <video id="selfView" autoplay muted playsinline hidden></video>
+
     <div class="attempt-shell">
       <header class="attempt-topbar">
         <div class="quiz-name-block">
@@ -105,7 +125,13 @@
             <p>
               5 . Once the quiz is submitted, no further changes can be made.
             </p>
+
+            <p>
+              6 . Your camera must stay on. Your face is verified every second,
+              and repeated failures will automatically submit the quiz.
+            </p>
           </div>
+          <p id="cameraStatus"></p>
           <div class="modal-actions">
             <button type="button" id="startBtn" class="btn btn-gold">
               Start Quiz
@@ -117,7 +143,7 @@
         <div class="modal-box">
           <h3 id="submitHeading">WARNING</h3>
           <div>
-            <p>Return to the fullscreen Window</p>
+            <p id="cheatMessage">Return to the fullscreen Window</p>
             <p>Otherwise the quiz will auto submit in</p>
             <h4 id="cheatSeconds"></h4>
           </div>
@@ -156,14 +182,26 @@
       startQuizModal.classList.add("show");
     });
 
-    startBtn.addEventListener("click", function () {
-      renderQuiz();
+    startBtn.addEventListener("click", async function () {
+      const wasLive = faceMonitor.cameraLive();
+      if (!(await faceMonitor.prepare())) {
+        showToast("Camera access is required to take this quiz", true);
+        return;
+      }
+      if (!wasLive) {
+        showToast("Camera is ready. Press Start Quiz again.");
+        return;
+      }
+      startBtn.disabled = true;
+
       browser.requestFullscreen();
+      await renderQuiz();
       startTimer(quizTime * 60);
       startQuizModal.classList.remove("show");
 
       setTimeout(() => {
         isQuizStarted = true;
+        faceMonitor.begin();
       }, 500);
     });
 
@@ -603,5 +641,198 @@
         window.close();
       }, 5000);
     }
+
+    const faceMonitor = (() => {
+      const CHECK_INTERVAL_MS = 200; // 5 frame per second (100 for 10 FPS || 1000 for 1 FPS )
+      const FAIL_LIMIT = 5; // consecutive failed checks before the warning
+      const WARNING_MS = 10000; // same 10s as the fullscreen warning
+      const FRAME_WIDTH = 480; // downscale frames before upload
+      const VERIFY_URL = `/api/student/verifyFace/${attemptToken}`;
+
+      const video = document.getElementById("selfView");
+      const cameraStatus = document.getElementById("cameraStatus");
+      const cheatMessage = document.getElementById("cheatMessage");
+      const defaultCheatText = cheatMessage.textContent;
+      const canvas = document.createElement("canvas");
+
+      let stream = null;
+      let timer = null;
+      let busy = false;
+      let started = false;
+      let fails = 0;
+      let faceTimeout = null;
+
+      function cameraLive() {
+        const track = stream && stream.getVideoTracks()[0];
+        return !!track && track.readyState === "live";
+      }
+
+      async function startCamera() {
+        if (cameraLive()) return true;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+              facingMode: "user",
+            },
+            audio: false,
+          });
+          video.srcObject = stream;
+          video.hidden = false;
+          await video.play().catch(() => {});
+          return true;
+        } catch (err) {
+          return false;
+        }
+      }
+
+      function stopCamera() {
+        if (stream) stream.getTracks().forEach((t) => t.stop());
+        stream = null;
+        video.srcObject = null;
+        video.hidden = true;
+      }
+
+      async function prepare() {
+        cameraStatus.textContent = "Requesting camera access...";
+        const ok = await startCamera();
+        cameraStatus.textContent = ok
+          ? "Camera ready"
+          : "Camera blocked. Allow camera access in your browser, then press Start Quiz again.";
+        return ok;
+      }
+
+      function captureFrame() {
+        if (!video.videoWidth) return Promise.resolve(null);
+        const scale = Math.min(1, FRAME_WIDTH / video.videoWidth);
+        canvas.width = Math.round(video.videoWidth * scale);
+        canvas.height = Math.round(video.videoHeight * scale);
+        canvas
+          .getContext("2d")
+          .drawImage(video, 0, 0, canvas.width, canvas.height);
+        return new Promise((resolve) =>
+          canvas.toBlob(resolve, "image/jpeg", 0.7),
+        );
+      }
+
+      // {ok:true} | {ok:false,message} | null (inconclusive: network/server/auth
+      // problem, so the student isn't punished for it)
+      async function verifyFrame() {
+        const blob = await captureFrame();
+        if (!blob)
+          return { ok: false, message: "Camera is not producing video" };
+
+        const form = new FormData();
+        form.append("image", blob, "frame.jpg");
+
+        try {
+          const res = await fetch(VERIFY_URL, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: form,
+            signal: AbortSignal.timeout(8000),
+          });
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok && data.match) return { ok: true };
+          if (res.ok || res.status === 400) {
+            return { ok: false, message: data.message || "Face not verified" };
+          }
+          return null;
+        } catch (err) {
+          return null;
+        }
+      }
+
+      function startWarning(message) {
+        if (cheatTimeout) return;
+
+        cheatMessage.textContent = `${message}. Keep only your face clearly visible to the camera.`;
+        cheatBackBtn.style.display = "none";
+        cheatModal.classList.add("show");
+        startCheatCountdown();
+        showToast(
+          "Face check failed. Fix it within 10 seconds or your quiz will be submitted",
+          true,
+        );
+
+        cheatTimeout = setTimeout(() => {
+          cheatModal.classList.remove("show");
+          forceSubmit("Face verification failed", "Penalty Applied");
+        }, WARNING_MS);
+        faceTimeout = cheatTimeout;
+      }
+
+      function endWarning() {
+        if (!faceTimeout) return;
+        if (cheatTimeout === faceTimeout) {
+          clearTimeout(cheatTimeout);
+          cheatTimeout = null;
+          clearInterval(window.cheatCountdownInterval);
+          cheatModal.classList.remove("show");
+        }
+        faceTimeout = null;
+        cheatMessage.textContent = defaultCheatText;
+        cheatBackBtn.style.display = "";
+      }
+
+      async function tick() {
+        if (busy) return;
+
+        if (!isQuizStarted) {
+          if (started) stop();
+          return;
+        }
+
+        busy = true;
+        try {
+          let result;
+          if (!cameraLive()) {
+            const back = await startCamera();
+            result = back
+              ? null
+              : { ok: false, message: "Camera is off or disconnected" };
+          } else {
+            result = await verifyFrame();
+          }
+
+          if (!isQuizStarted || result === null) return;
+
+          if (result.ok) {
+            fails = 0;
+            video.classList.remove("bad");
+            endWarning();
+          } else {
+            fails++;
+            video.classList.add("bad");
+            if (fails >= FAIL_LIMIT) startWarning(result.message);
+          }
+        } finally {
+          busy = false;
+        }
+      }
+
+      function begin() {
+        started = true;
+        fails = 0;
+        clearInterval(timer);
+        timer = setInterval(tick, CHECK_INTERVAL_MS);
+      }
+
+      function stop() {
+        started = false;
+        clearInterval(timer);
+        timer = null;
+        endWarning();
+        stopCamera();
+      }
+
+      prepare();
+
+      return { prepare, cameraLive, begin, stop };
+    })();
   </script>
 </html>

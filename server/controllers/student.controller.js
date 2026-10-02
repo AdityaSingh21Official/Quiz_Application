@@ -47,6 +47,27 @@ async function generateAttempt(req, res) {
     const { quizId } = req.body;
     const attemptToken = crypto.randomUUID();
 
+    const [verifyRegistration] = await db.query(
+      `
+      select embeding from face_embeding where sid = ?
+      `,
+      [userId],
+    );
+
+    if (
+      !verifyRegistration ||
+      verifyRegistration.length === 0 ||
+      verifyRegistration[0]["embeding"] === null
+    ) {
+      return res.status(404).json({
+        message: "No Face Registerd for this User",
+      });
+    }
+
+    const pyData = await fetch("http://127.0.0.1:8000/ping");
+
+    if (!pyData.ok) throw new Error("PYTHON SERVIE ERROR : Not Up");
+
     await db.query(
       `insert into attempts (sid, quiz_id, attempt_token) values(?, ?, ?)`,
       [userId, quizId, attemptToken],

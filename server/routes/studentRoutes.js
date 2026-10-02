@@ -9,6 +9,10 @@ import {
   myAllResults,
   getThisQuizResult,
 } from "../controllers/student.Controller.js";
+
+import { uploadFrameToDisk } from "../middlewares/temp.frame.middleware.js";
+import { checkTempFrame } from "../controllers/temp.frame.controller.js";
+
 const student = express.Router();
 
 student.get("/student/getQuizes", authorise, isStudentRole, getQuizes);
@@ -29,6 +33,14 @@ student.put(
   authorise,
   isStudentRole,
   getThisQuizResult,
+);
+
+student.post(
+  "/student/verifyFace/:attemptToken",
+  authorise,
+  isStudentRole,
+  uploadFrameToDisk,
+  checkTempFrame,
 );
 
 export default student;
