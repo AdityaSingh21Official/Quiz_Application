@@ -3,7 +3,7 @@ import path from "path";
 import { TEMP_DIR } from "../middlewares/temp.frame.middleware.js";
 import { db } from "../database/db.config.js";
 
-function cosineSimilarity(a, b) {
+/* function cosineSimilarity(a, b) {
   let dot = 0,
     normA = 0,
     normB = 0;
@@ -14,7 +14,7 @@ function cosineSimilarity(a, b) {
   }
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
-
+ */
 async function checkTempFrame(req, res) {
   const attemptId = req.params.attemptToken;
   const file = req.file;
@@ -50,40 +50,26 @@ async function checkTempFrame(req, res) {
     let stored = data[0]["embeding"];
     if (typeof stored === "string") stored = JSON.parse(stored);
 
-    const resPy = await fetch("http://127.0.0.1:8000/embed", {
+    const resPy = await fetch("http://127.0.0.1:8000/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: file.filename }),
+      body: JSON.stringify({
+        path: file.filename,
+        attempt_token: attemptId,
+        embedding: stored,
+      }),
       signal: AbortSignal.timeout(6000),
     }).catch(() => {
       throw new Error("PYTHON SERVICE UNREACHABLE");
     });
 
     const pyData = await resPy.json();
-
-    if (resPy.status === 400) {
-      await cleanup();
-      return res.status(400).json({
-        match: false,
-        message: pyData.detail,
-      });
-    }
-
-    if (!resPy.ok) {
-      throw new Error("PYTHON SERVIE ERROR : " + resPy.status);
-    }
-    if (!Array.isArray(pyData.embedding) || pyData.embedding.length !== 512) {
-      throw new Error("PYTHON SERVICE ERROR: bad embedding");
-    }
-
     await cleanup();
+    if (!resPy.ok) throw new Error("PYTHON SERVICE ERROR: " + resPy.status);
 
-    const distance = 1 - cosineSimilarity(stored, pyData["embedding"]);
-
-    return res.status(200).json({
-      match: distance < 0.68,
-      message: distance < 0.68 ? "Face Verified" : "Face not Verified",
-    });
+    return res
+      .status(200)
+      .json({ match: pyData.match, message: pyData.message });
   } catch (error) {
     await cleanup();
 

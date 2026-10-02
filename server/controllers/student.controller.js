@@ -238,6 +238,12 @@ async function checkQuiz(req, res) {
       });
     }
 
+    fetch("http://127.0.0.1:8000/complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ attempt_token: attemptToken }),
+    }).catch(() => {});
+
     const quizId = metaData[0]["quiz_id"];
     const attemptId = metaData[0]["attemptid"];
 

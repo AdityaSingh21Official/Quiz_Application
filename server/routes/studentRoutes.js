@@ -8,7 +8,7 @@ import {
   checkQuiz,
   myAllResults,
   getThisQuizResult,
-} from "../controllers/student.Controller.js";
+} from "../controllers/student.controller.js";
 
 import { uploadFrameToDisk } from "../middlewares/temp.frame.middleware.js";
 import { checkTempFrame } from "../controllers/temp.frame.controller.js";
