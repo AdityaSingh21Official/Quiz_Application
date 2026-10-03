@@ -13,18 +13,35 @@ import {
 import { uploadFrameToDisk } from "../middlewares/temp.frame.middleware.js";
 import { checkTempFrame } from "../controllers/temp.frame.controller.js";
 
+import { requireDesktopClient } from "../middlewares/desktop.client.middleware.js";
+
+import { getStudentPhoto } from "../controllers/image.controller.js";
+
 const student = express.Router();
 
 student.get("/student/getQuizes", authorise, isStudentRole, getQuizes);
 student.post(
   "/student/generateAttempt",
+  requireDesktopClient,
   authorise,
   isStudentRole,
   generateAttempt,
 );
-student.get("/student/startQuiz/:id", authorise, isStudentRole, startQuiz);
+student.get(
+  "/student/startQuiz/:id",
+  requireDesktopClient,
+  authorise,
+  isStudentRole,
+  startQuiz,
+);
 
-student.post("/student/submitQuiz/:id", authorise, isStudentRole, checkQuiz);
+student.post(
+  "/student/submitQuiz/:id",
+  requireDesktopClient,
+  authorise,
+  isStudentRole,
+  checkQuiz,
+);
 
 student.get("/student/myResults", authorise, isStudentRole, myAllResults);
 
@@ -42,5 +59,7 @@ student.post(
   uploadFrameToDisk,
   checkTempFrame,
 );
+
+student.get("/student/getPhoto", authorise, isStudentRole, getStudentPhoto);
 
 export default student;

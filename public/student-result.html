@@ -131,7 +131,7 @@
       const role = document.getElementById("role");
       const userAvatar = document.getElementById("userAvatar");
       loadName();
-
+      getUserAvatar();
       const quizTableBody = document.getElementById("quizTableBody");
       const summaryStats = document.getElementById("summaryStats");
       const quizModalOverlay = document.getElementById("quizModalOverlay");
@@ -143,6 +143,39 @@
 
       function getToken() {
         return localStorage.getItem("token");
+      }
+
+      async function getUserAvatar() {
+        let photoPath = localStorage.getItem("photo_path");
+
+        if (!photoPath || photoPath === null || photoPath === "null") {
+          const response = await fetch("api/student/getphoto", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")} `,
+            },
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || data.path === null) {
+            localStorage.setItem("photo_path", null);
+            return;
+          }
+
+          photoPath = data.path;
+          localStorage.setItem("photo_path", photoPath);
+        }
+
+        userAvatar.innerHTML = `
+      <img 
+    src="../server/uploads/students/${photoPath}"
+    style="width: 100%; height: 100%; object-fit: contain;"
+  />
+      `;
+
+        return;
       }
 
       function authHeaders() {

@@ -8,6 +8,7 @@ import numpy as np
 from deepface import DeepFace
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from ultralytics import YOLO
 
 MODEL_NAME = "ArcFace"
 
@@ -17,6 +18,16 @@ MATCH_DISTANCE = 0.68
 WINDOW = 20
 STILL_MOTION = 0.01
 MAX_IDLE_S = 1800
+
+DETECT_EVERY = 2
+DETECT_HITS = 2
+SEE_CONF = 0.15
+DETECT_CONF = 0.30
+WATCH = {"cell phone": "Mobile phone", "book": "Book", "laptop": "Laptop"}
+
+yolo = YOLO("yolo11s.pt")
+WATCH_IDS = [i for i, n in yolo.names.items() if n in WATCH]
+YOLO_LOCK = threading.Lock()
 
 ATTEMPTS = {}
 LOCK = threading.Lock()
@@ -35,6 +46,7 @@ async def lifespan(app: FastAPI):
         )
     except Exception as e:
         print("Anti-spoof warm-up finished with:", e)
+    yolo.predict(blank, verbose=False)
     yield
 
 
@@ -70,7 +82,14 @@ def track_motion(attempt_token, area):
             del ATTEMPTS[k]
 
         record = ATTEMPTS.setdefault(
-            attempt_token, {"boxes": deque(maxlen=WINDOW), "seen": now}
+            attempt_token,
+            {
+                "boxes": deque(maxlen=WINDOW),
+                "seen": now,
+                "calls": 0,
+                "hits": 0,
+                "flag": None,
+            },
         )
         record["seen"] = now
         record["boxes"].append(center)
@@ -88,6 +107,52 @@ def track_motion(attempt_token, area):
             np.std(arr[:, 2] / mean_w),
         )
     )
+
+
+def detect_objects(attempt_token, file_path):
+    with LOCK:
+        record = ATTEMPTS.get(attempt_token)
+        if record is None:
+            return None
+        due = record["calls"] % DETECT_EVERY == 0
+        record["calls"] += 1
+        flag = record["flag"]
+
+    if not due:
+        return flag
+
+    with YOLO_LOCK:
+        result = yolo.predict(
+            str(file_path),
+            classes=WATCH_IDS,
+            conf=SEE_CONF,
+            imgsz=640,
+            verbose=False,
+        )[0]
+
+    label = None
+    if len(result.boxes):
+        best = max(result.boxes, key=lambda b: float(b.conf))
+        name = WATCH[yolo.names[int(best.cls)]]
+        conf = float(best.conf)
+        print(f"yolo: saw {name} conf={conf:.2f} (needs {DETECT_CONF})")
+        if conf >= DETECT_CONF:
+            label = name
+    else:
+        print("yolo: nothing")
+
+    with LOCK:
+        record = ATTEMPTS.get(attempt_token)
+        if record is None:
+            return None
+        if label:
+            record["hits"] += 1
+            if record["hits"] >= DETECT_HITS:
+                record["flag"] = label
+        else:
+            record["hits"] = 0
+            record["flag"] = None
+        return record["flag"]
 
 
 @app.post("/embed")
@@ -148,6 +213,10 @@ def verify(req: VerifyRequest):
 
     if motion is not None and motion < STILL_MOTION:
         return {"match": False, "message": "Face is unnaturally still"}
+
+    label = detect_objects(req.attempt_token, file_path)
+    if label:
+        return {"match": False, "message": f"{label} detected"}
 
     return {"match": True, "message": "Face Verified"}
 

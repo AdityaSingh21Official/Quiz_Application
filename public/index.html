@@ -117,11 +117,11 @@
             let callApi = "";
             let nextWindow = "";
 
-            if (inputId.length === 3) {
+            if (inputId[0] === "2") {
               callApi = "/api/login/faculty";
               nextWindow = "/teacher-dashboard.html";
               console.log(callApi);
-            } else if (inputId.length === 5) {
+            } else if (inputId[0] === "3") {
               callApi = "/api/login/student";
               nextWindow = "/student-dashboard.html";
               console.log(callApi);

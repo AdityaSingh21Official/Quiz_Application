@@ -17,6 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(express.static(path.resolve(__dirname, "../public")));
+app.use("/server/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api", loginRoutes);
 app.use("/api", teacherRoutes);

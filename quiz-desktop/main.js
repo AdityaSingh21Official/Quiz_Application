@@ -1,13 +1,25 @@
 const { app, BrowserWindow, Menu, session } = require("electron");
 const path = require("path");
+const crypto = require("crypto");
 
 const SERVER = "http://localhost:11011";
 const LOGIN_PAGE = "/index.html";
-const DEV = !app.isPackaged && process.argv.includes("--dev"); // --dev = no kiosk, DevTools on
+const PROTOCOL = "myquizapp";
+const DEV = !app.isPackaged && process.argv.includes("--dev");
 const PARTITION = "quiz-app";
+const APP_KEY =
+  "61389343649e6ccb55dbd17ae578ae32fe57e10d8a964d62f3e935ecb2cd1737";
 
 let mainWin = null;
 let quizWin = null;
+
+if (process.defaultApp && process.argv.length >= 2) {
+  app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [
+    path.resolve(process.argv[1]),
+  ]);
+} else {
+  app.setAsDefaultProtocolClient(PROTOCOL);
+}
 
 const isOurs = (url) => {
   try {
@@ -144,12 +156,28 @@ if (!app.requestSingleInstanceLock()) {
     Menu.setApplicationMenu(null);
 
     const ses = session.fromPartition(PARTITION);
+
     ses.setPermissionRequestHandler((wc, permission, cb) =>
       cb(permission === "media" && isOurs(wc.getURL())),
     );
     ses.setPermissionCheckHandler(
       (wc, permission, origin) =>
         permission === "media" && isOurs(String(origin)),
+    );
+
+    ses.webRequest.onBeforeSendHeaders(
+      { urls: [SERVER + "/*"] },
+      (details, cb) => {
+        const ts = Date.now().toString();
+        const pathname = new URL(details.url).pathname;
+        const sig = crypto
+          .createHmac("sha256", APP_KEY)
+          .update(`${ts}.${details.method}.${pathname}`)
+          .digest("hex");
+        details.requestHeaders["X-Quiz-Ts"] = ts;
+        details.requestHeaders["X-Quiz-Sig"] = sig;
+        cb({ requestHeaders: details.requestHeaders });
+      },
     );
 
     createMainWindow();

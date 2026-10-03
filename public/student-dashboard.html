@@ -115,13 +115,42 @@
         </div>
       </div>
     </div>
+    <div id="downloadModalOverlay" class="modal-overlay">
+      <div class="modal-box">
+        <h3>Quiz Desktop App Required</h3>
+        <p>
+          Quizzes can only be taken in the Quiz Desktop app. Download and
+          install it, then log in there to start your quiz.
+        </p>
+        <div class="modal-actions">
+          <button
+            type="button"
+            id="closeDownloadBtn"
+            class="btn btn-ghost btn-sm"
+          >
+            OK
+          </button>
+          <button type="button" id="downloadAppBtn" class="btn btn-gold btn-sm">
+            Download now
+          </button>
+        </div>
+      </div>
+    </div>
   </body>
   <script>
+    const REQUIRE_DESKTOP = true;
+    const DOWNLOAD_URL = "/downloads/Quiz-Desktop-Setup.exe";
+    const isDesktopApp = /Electron/i.test(navigator.userAgent);
+
     const userName = document.getElementById("studentName");
     const role = document.getElementById("role");
     const userAvatar = document.getElementById("userAvatar");
     loadName();
+    getUserAvatar();
     const logoutModalOverlay = document.getElementById("logoutModalOverlay");
+    const downloadModalOverlay = document.getElementById(
+      "downloadModalOverlay",
+    );
     const loadingPlaceholder = document.getElementById("loading-placeholder");
     const confirmStartOverlay = document.getElementById(
       "confirmStartModalOverlay",
@@ -130,6 +159,39 @@
     document.addEventListener("DOMContentLoaded", function () {
       renderExistingQuestions();
     });
+
+    async function getUserAvatar() {
+      let photoPath = localStorage.getItem("photo_path");
+
+      if (!photoPath || photoPath === null || photoPath === "null") {
+        const response = await fetch("api/student/getphoto", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")} `,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.path === null) {
+          localStorage.setItem("photo_path", null);
+          return;
+        }
+
+        photoPath = data.path;
+        localStorage.setItem("photo_path", photoPath);
+      }
+
+      userAvatar.innerHTML = `
+      <img 
+    src="../server/uploads/students/${photoPath}"
+    style="width: 100%; height: 100%; object-fit: contain;"
+  />
+      `;
+
+      return;
+    }
 
     async function renderExistingQuestions() {
       loadingPlaceholder.classList.add("hidden");
@@ -198,10 +260,31 @@
 
     quizGrid.addEventListener("click", function (e) {
       if (e.target.tagName === "BUTTON") {
+        if (REQUIRE_DESKTOP && !isDesktopApp) {
+          downloadModalOverlay.classList.add("show");
+          return;
+        }
         confirmStartOverlay.classList.add("show");
         CurrQuizID = e.target.id;
       }
       return;
+    });
+
+    downloadModalOverlay.addEventListener("click", function (e) {
+      if (e.target.id === "closeDownloadBtn") {
+        downloadModalOverlay.classList.remove("show");
+        return;
+      }
+      if (e.target.id === "downloadAppBtn") {
+        const link = document.createElement("a");
+        link.href = DOWNLOAD_URL;
+        link.download = "";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        downloadModalOverlay.classList.remove("show");
+        showToast("Download started. Install the app, then log in there.");
+      }
     });
 
     confirmStartOverlay.addEventListener("click", function (e) {

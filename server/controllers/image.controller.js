@@ -97,7 +97,7 @@ async function registerNewStudentPhoto(req, res) {
 
 async function getStudentPhoto(req, res) {
   try {
-    const { studentId } = req.body;
+    const studentId = req.user.userId;
 
     const userIdRegex = /^[0-9]{5,5}$/;
 
@@ -112,7 +112,15 @@ async function getStudentPhoto(req, res) {
     if (!data.length)
       return res.status(400).json({ message: "Invalid Student ID" });
 
-    res.sendFile(path.join(STUDENT_DIR, data[0]["photo_path"]));
+    if (data[0]["photo_path"] === null) {
+      return res.status(200).json({
+        path: null,
+      });
+    }
+
+    return res.status(200).json({
+      path: data[0]["photo_path"],
+    });
   } catch (error) {
     console.log(
       "CONTROLLER ERROR : registration.controller {getStudentPhoto}\n" + error,
